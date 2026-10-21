@@ -42,7 +42,7 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 .back{transform:rotateY(180deg);background:#fbf6e4;color:#33290f;padding:26px 22px 22px;display:flex;flex-direction:column;gap:12px;
   background-image:repeating-linear-gradient(transparent 0 35px,rgba(120,100,40,.16) 35px 36px)}
 .back .lbl{font-weight:800;font-size:15px;color:#7a6322}
-#zone{flex:1;min-height:0;display:flex}
+#zone{flex:1;min-height:84px;display:flex}
 #txt,#zone textarea{flex:1;width:100%;font-size:24px;line-height:36px;padding:0;border:0;background:transparent;color:#33290f;resize:none;outline:none}
 #txt{white-space:pre-wrap;overflow:auto}
 #txt.ph{color:#a89a68}
@@ -55,6 +55,19 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 .btn.ghost{background:transparent;color:var(--ink);box-shadow:0 0 0 2px var(--line) inset}
 .btn.red{background:var(--red);color:#fff}
 .btn.sm{padding:10px 14px;font-size:14px;border-radius:12px;width:auto;display:inline-block}
+
+/* ---------- 今日のリスト ---------- */
+.tl-h{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:14px;color:#7a6322}
+.tl-h button{border:0;border-radius:10px;padding:6px 10px;font-weight:800;font-size:13px;background:rgba(120,100,40,.16);color:#5b4a14;cursor:pointer}
+.tl{max-height:26dvh;overflow:auto;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch}
+.ti{flex:none;border:0;text-align:left;border-radius:12px;padding:10px 12px;font-weight:700;font-size:16px;line-height:1.35;background:rgba(120,100,40,.12);color:#33290f;cursor:pointer}
+.ti.on{background:#e6c35f;box-shadow:0 0 0 2px #a8841f inset}
+.tl-empty{font-size:13px;color:#8a7a45;line-height:1.5}
+.trow{display:flex;gap:10px;align-items:center;padding:12px;border-radius:14px;background:var(--panel);box-shadow:0 0 0 1.5px var(--line) inset;margin-bottom:8px}
+.trow span{flex:1;font-weight:700;line-height:1.35;word-break:break-word}
+.trow button{border:0;border-radius:10px;padding:8px 12px;font-weight:800;font-size:13px;background:transparent;color:var(--red);box-shadow:0 0 0 1.5px var(--line) inset;cursor:pointer}
+.cmt{display:block;margin-top:3px;font-size:12.5px;line-height:1.4;color:var(--sub)}
+.item .t small.cmt{color:var(--ink);opacity:.85;margin-top:4px}
 
 /* ---------- ナビ ---------- */
 #nav{position:fixed;left:0;right:0;bottom:0;display:flex;gap:10px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 35%)}
@@ -96,8 +109,8 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 .hint{font-size:12px;text-align:center;color:var(--sub);opacity:.8}
 
 /* ---------- 金額チップ ---------- */
-.chips{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-.chip{border:0;border-radius:14px;padding:14px 0;font-family:var(--num);font-weight:800;font-size:22px;background:var(--panel);box-shadow:0 0 0 1.5px var(--line) inset;cursor:pointer}
+.chips{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.chip{border:0;border-radius:14px;padding:14px 0;font-family:var(--num);font-weight:800;font-size:20px;background:var(--panel);box-shadow:0 0 0 1.5px var(--line) inset;cursor:pointer}
 .chip.on{background:var(--brass);color:var(--brass-ink);box-shadow:none}
 .field{width:100%;min-height:120px;border:0;border-radius:16px;padding:14px;font-size:18px;line-height:1.5;background:var(--panel);color:var(--ink);box-shadow:0 0 0 1.5px var(--line) inset;outline:none;resize:vertical}
 .lab{font-weight:800;font-size:14px;color:var(--sub);margin:6px 0}
@@ -152,7 +165,7 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 <script>
 /* ===== データ ===== */
 const KEY='coinNote.v1';
-const blank=()=>({coins:[],batches:[],run:null,draft:''});
+const blank=()=>({coins:[],batches:[],run:null,draft:'',todos:[],draftTodo:null});
 let S=load();
 function load(){try{const j=JSON.parse(localStorage.getItem(KEY));if(j&&Array.isArray(j.coins))return Object.assign(blank(),j)}catch(e){}return blank()}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('保存に失敗したで。バックアップ取っといて！')}}
@@ -167,7 +180,8 @@ const hm=t=>{const d=new Date(t);return `${p2(d.getHours())}:${p2(d.getMinutes()
 const dur=(a,b)=>{const m=Math.max(0,Math.round((b-a)/60000));return m<60?`${m}分`:`${Math.floor(m/60)}時間${m%60}分`};
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2400)}
-const avail=()=>S.coins.filter(c=>c.status==='saved'&&!c.batchId).sort((a,b)=>b.endedAt-a.endedAt);
+const regAt=c=>c.registeredAt||c.endedAt||0;
+const avail=()=>S.coins.filter(c=>c.status==='saved'&&!c.batchId).sort((a,b)=>regAt(b)-regAt(a));
 const balance=()=>avail().reduce((s,c)=>s+c.amount,0);
 const paper=(t,a)=>`<div class="mini"><div class="amtline"><span class="n">${a}</span><span class="y">円</span></div><div class="ptxt">${esc(t)}</div></div>`;
 
@@ -185,20 +199,20 @@ function render(){
   if(showNav){
     nav.innerHTML=`<button data-act="go-note" class="${screen==='note'?'on':''}">付箋</button><button data-act="go-bank" class="${screen==='bank'?'on':''}">貯金箱<b>${balance()}円</b></button>`;
   }
-  ({note:rNote,run:rRun,judge:rJudge,edit:rEdit,bank:rBank})[screen](app);
+  ({note:rNote,run:rRun,judge:rJudge,edit:rEdit,bank:rBank,todos:rTodos})[screen](app);
 }
 
 /* ---- 付箋 ---- */
 function rNote(app){
   app.innerHTML=`<div class="stage" id="stage"><div class="card" id="card">
     <div class="face front"><div class="coin"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="100円玉"><defs><linearGradient id="cf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbfbfc"/><stop offset=".2" stop-color="#c7cbcf"/><stop offset=".36" stop-color="#f4f5f6"/><stop offset=".52" stop-color="#a6abb0"/><stop offset=".66" stop-color="#ececed"/><stop offset=".84" stop-color="#bdc1c5"/><stop offset="1" stop-color="#f1f2f3"/></linearGradient><linearGradient id="cr" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffffff"/><stop offset=".3" stop-color="#a9adb2"/><stop offset=".55" stop-color="#f6f6f7"/><stop offset=".8" stop-color="#979ca1"/><stop offset="1" stop-color="#ffffff"/></linearGradient><linearGradient id="gf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#d9dcdf"/><stop offset=".75" stop-color="#b6bbc0"/><stop offset="1" stop-color="#f3f4f5"/></linearGradient><linearGradient id="gi" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#f7f8f8"/><stop offset=".5" stop-color="#cfd3d6"/><stop offset="1" stop-color="#ffffff"/></linearGradient><linearGradient id="gs" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#60666c"/><stop offset=".5" stop-color="#c9cdd1"/><stop offset="1" stop-color="#7d838a"/></linearGradient><filter id="sh" x="-10%" y="-10%" width="125%" height="125%"><feDropShadow dx=".9" dy="1.4" stdDeviation=".7" flood-color="#000" flood-opacity=".35"/></filter></defs><circle cx="100" cy="100" r="98" fill="#25282c"/><circle cx="100" cy="100" r="96" fill="url(#cr)"/><circle cx="100" cy="100" r="89.5" fill="url(#cf)" stroke="#858a90" stroke-width="1.1"/><circle cx="100" cy="100" r="86.5" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1"/><g filter="url(#sh)" stroke-linejoin="round" transform="translate(0 100) scale(1 1.15) translate(0 -100)"><g transform="translate(54 100)"><polygon points="-24,-20 -2,-40 14,-40 14,28 24,28 24,40 -24,40 -24,28 -6,28 -6,-14 -24,-14" fill="url(#gf)" stroke="#3f444a" stroke-width="1.7"/><polygon points="-20.2,-18 -0.4,-36 10,-36 10,32 20,32 20,36 -20,36 -20,32 -2,32 -2,-18" fill="url(#gi)" stroke="#a3a8ad" stroke-width="1.1"/></g><g transform="translate(104 100)"><polygon points="-20,-26 0,-40 20,-26 20,26 0,40 -20,26" fill="url(#gf)" stroke="#3f444a" stroke-width="1.7"/><polygon points="-20,-26 0,-40 20,-26 20,26 0,40 -20,26" transform="scale(.8)" fill="url(#gi)" stroke="#a3a8ad" stroke-width="1.1"/><polygon points="-5,-22 0,-27 5,-22 5,22 0,27 -5,22" fill="url(#gs)" stroke="#3a3f45" stroke-width=".9"/></g><g transform="translate(148 100)"><polygon points="-20,-26 0,-40 20,-26 20,26 0,40 -20,26" fill="url(#gf)" stroke="#3f444a" stroke-width="1.7"/><polygon points="-20,-26 0,-40 20,-26 20,26 0,40 -20,26" transform="scale(.8)" fill="url(#gi)" stroke="#a3a8ad" stroke-width="1.1"/><polygon points="-5,-22 0,-27 5,-22 5,22 0,27 -5,22" fill="url(#gs)" stroke="#3a3f45" stroke-width=".9"/></g></g></svg></div><div class="sub">横にスワイプでめくる</div></div>
-    <div class="face back"><div class="lbl">いまからやること</div><div id="zone"></div>
+    <div class="face back"><div class="lbl">いまからやること</div><div id="zone"></div><div id="todolist"></div>
       <button class="btn brass" id="start" data-act="start">スタート</button>
       <div class="tip">スタートしたら、iPhoneのサイドボタンを3回押すと画面が消えなくなるで。</div></div>
   </div></div>`;
   const card=$('#card');card.style.transition='none';card.style.transform=`rotateY(${rot}deg)`;card.classList.toggle('flipped',isFlipped());
   requestAnimationFrame(()=>requestAnimationFrame(()=>card.style.transition=''));
-  drawZone();
+  drawZone();drawTodos();
   const stage=$('#stage');let x0=null,w=1;
   stage.addEventListener('pointerdown',e=>{if(e.target.closest('textarea,button'))return;x0=e.clientX;w=stage.clientWidth;card.classList.add('drag')});
   window.onpointermove=e=>{if(x0===null)return;card.style.transform=`rotateY(${rot+(e.clientX-x0)/w*180}deg)`};
@@ -213,7 +227,7 @@ function drawZone(){
   if(editing){
     z.innerHTML=`<textarea id="ta" placeholder="先延ばししてること、何やる？"></textarea>`;
     const ta=$('#ta');ta.value=S.draft;ta.focus();
-    ta.addEventListener('input',()=>{S.draft=ta.value;save();upStart()});
+    ta.addEventListener('input',()=>{S.draft=ta.value;if(!S.draft.trim()&&S.draftTodo){S.draftTodo=null;drawTodos()}save();upStart()});
     ta.addEventListener('blur',()=>{editing=false;drawZone()});
   }else{
     z.innerHTML=`<div id="txt" class="${S.draft.trim()?'':'ph'}" data-act="edit">${S.draft.trim()?esc(S.draft):'ここをタップして書く'}</div>`;
@@ -221,6 +235,13 @@ function drawZone(){
   upStart();
 }
 function upStart(){const b=$('#start');if(b)b.disabled=!S.draft.trim()}
+function drawTodos(){
+  const el=$('#todolist');if(!el)return;
+  const t=S.todos;
+  el.innerHTML=`<div class="tl-h"><span>今日のリスト${t.length?`（${t.length}）`:''}</span><button data-act="todos">登録・編集</button></div>`+
+    (t.length?`<div class="tl">${t.map(x=>`<button class="ti ${S.draftTodo===x.id?'on':''}" data-act="todo-pick" data-id="${x.id}">${esc(x.text)}</button>`).join('')}</div>`
+      :`<div class="tl-empty">リストはまだ空やで。「登録・編集」でまとめて入れられる。</div>`);
+}
 
 /* ---- 実行中 ---- */
 function rRun(app){
@@ -233,7 +254,7 @@ function rRun(app){
 function rJudge(app){
   const r=S.run;
   app.innerHTML=`<div class="page nonav"><h2>おつかれさん！</h2><div id="prev">${paper(r.text,r.amount||100)}</div>
-  <div class="meta">${fmt(r.startedAt)} → ${hm(r.endedAt)}　(${dur(r.startedAt,r.endedAt)})</div>
+  <div style="height:18px"></div>
   <div class="stack"><button class="btn brass" data-act="to-edit">貯める</button>
   <button class="btn ghost" data-act="tear">ちぎる（挑戦したけどダメやった）</button></div></div>`;
 }
@@ -243,10 +264,26 @@ function rEdit(app){
   <div class="lab">やったこと（足りんかったら書き直してな）</div>
   <textarea class="field" id="etxt">${esc(r.text)}</textarea>
   <div class="lab" style="margin-top:14px">金額（出来高で下げてええで）</div>
-  <div class="chips">${[10,20,30,40,50,60,70,80,90,100].map(n=>`<button class="chip ${n===pickAmt?'on':''}" data-act="amt" data-v="${n}">${n}</button>`).join('')}</div>
+  <div class="chips">${[10,20,30,40,50,60,70,80,90,100,200].map(n=>`<button class="chip ${n===pickAmt?'on':''}" data-act="amt" data-v="${n}">${n}</button>`).join('')}</div>
+  <div class="lab" style="margin-top:14px">金額の理由・コメント（任意）</div>
+  <textarea class="field" id="ecmt" style="min-height:90px" placeholder="${esc(cmtPH())}"></textarea>
   <div class="stack" style="margin-top:20px"><div id="prev"></div>
   <button class="btn brass" data-act="deposit">貯金箱に入れる</button>
   <button class="btn ghost" data-act="back-judge">戻る</button></div></div>`;
+}
+
+const cmtPH=()=>pickAmt!==100?'金額の根拠を残しとこう（例：半分しか終わらんかったので50円）':'気づいたことや、100円にした理由など（なくてもOK）';
+
+/* ---- 今日のリスト ---- */
+function rTodos(app){
+  const t=S.todos;
+  app.innerHTML=`<div class="page nonav"><h2>今日のリスト</h2>
+  <div class="lab">まとめて追加（1行に1件）</div>
+  <textarea class="field" id="bulk" placeholder="日報を書く&#10;見積書を確認する&#10;メールの返信"></textarea>
+  <button class="btn brass" style="margin-top:12px" data-act="todo-add">リストに追加</button>
+  <div class="lab" style="margin-top:22px">登録済み（${t.length}）</div>
+  ${t.length?t.map(x=>`<div class="trow"><span>${esc(x.text)}</span><button data-act="todo-del" data-id="${x.id}">削除</button></div>`).join(''):'<div class="empty" style="padding:18px 0">まだ空やで。</div>'}
+  <div class="stack" style="margin-top:20px"><button class="btn ghost" data-act="back-note">付箋に戻る</button>${t.length?'<button class="btn ghost" data-act="todo-clear">全部消す</button>':''}</div></div>`;
 }
 
 /* ---- 貯金箱 ---- */
@@ -261,19 +298,19 @@ function itemHTML(c,selected){
   const edited=c.origText&&c.origText!==c.text;
   return `<div class="item ${selected?'sel':''}" data-act="pick" data-id="${c.id}">
   <div class="c ${c.status==='failed'?'f':''}">${c.status==='failed'?'ダメ':c.amount}</div>
-  <div class="t"><p>${esc(c.text)}</p><small>${fmt(c.startedAt)} → ${hm(c.endedAt)}（${dur(c.startedAt,c.endedAt)}）${edited?`<br><s>元: ${esc(c.origText)}</s>`:''}</small></div></div>`;
+  <div class="t"><p>${esc(c.text)}</p><small>${fmt(regAt(c))} 登録${edited?`<br><s>元: ${esc(c.origText)}</s>`:''}</small>${c.comment?`<small class="cmt">コメント：${esc(c.comment)}</small>`:''}</div></div>`;
 }
 function rBank(app){
   const list=avail(),ids=new Set(rangeIds());
   const used=S.batches.slice().sort((a,b)=>b.at-a.at);
-  const failed=S.coins.filter(c=>c.status==='failed').sort((a,b)=>b.endedAt-a.endedAt);
+  const failed=S.coins.filter(c=>c.status==='failed').sort((a,b)=>regAt(b)-regAt(a));
   let body='';
   if(tab==='avail'){
     body=list.length?`<p class="help">使う範囲は、最初の1枚→最後の1枚の順にタップ。間の分がまとめて選ばれるで。</p>`+list.map(c=>itemHTML(c,ids.has(c.id))).join('')
       :`<div class="empty">まだ使える小銭はないで。<br>付箋で1枚やりきって貯めよう。</div>`;
   }else if(tab==='used'){
     body=used.length?used.map(b=>{const cs=S.coins.filter(c=>c.batchId===b.id);
-      return `<details class="batch"><summary><span>${fmt(b.at)} に使った（${cs.length}枚）</span><span class="n">${b.total}円</span></summary>${cs.map(c=>`<div class="row"><span>${esc(c.text)}</span><b>${c.amount}円</b></div>`).join('')}</details>`}).join('')
+      return `<details class="batch"><summary><span>${fmt(b.at)} に使った（${cs.length}枚）</span><span class="n">${b.total}円</span></summary>${cs.map(c=>`<div class="row"><span>${esc(c.text)}${c.comment?`<small class="cmt">コメント：${esc(c.comment)}</small>`:''}</span><b>${c.amount}円</b></div>`).join('')}</details>`}).join('')
       :`<div class="empty">まだ権利を使ってへんで。</div>`;
   }else{
     body=failed.length?failed.map(c=>itemHTML(c,false).replace('data-act="pick"','')).join(''):`<div class="empty">ダメやった挑戦はまだないで。</div>`;
@@ -294,12 +331,22 @@ document.addEventListener('click',e=>{
   const a=el.dataset.act;
   if(a==='go-note'){screen='note';render()}
   else if(a==='go-bank'){screen='bank';render()}
+  else if(a==='todos'){screen='todos';render()}
+  else if(a==='back-note'){if(!isFlipped())rot+=180;screen='note';render()}
+  else if(a==='todo-pick'){const t=S.todos.find(x=>x.id===el.dataset.id);if(t){S.draft=t.text;S.draftTodo=t.id;save();drawZone();drawTodos()}}
+  else if(a==='todo-add'){
+    const v=($('#bulk').value||'').split(/\r?\n/).map(x=>x.replace(/^[\s・\-*•]+/,'').trim()).filter(Boolean);
+    if(!v.length){toast('1行に1件ずつ書いてな');return}
+    v.forEach(t=>S.todos.push({id:uid(),text:t,addedAt:Date.now()}));save();render();toast(`${v.length}件追加したで！`);
+  }
+  else if(a==='todo-del'){S.todos=S.todos.filter(x=>x.id!==el.dataset.id);if(S.draftTodo===el.dataset.id)S.draftTodo=null;save();render()}
+  else if(a==='todo-clear'){if(confirm('リストを全部消す？')){S.todos=[];S.draftTodo=null;save();render()}}
   else if(a==='edit'){editing=true;drawZone()}
-  else if(a==='start'){if(!S.draft.trim())return;S.run={text:S.draft.trim(),amount:100,startedAt:Date.now(),endedAt:null};save();screen='run';render()}
+  else if(a==='start'){if(!S.draft.trim())return;S.run={text:S.draft.trim(),amount:100,startedAt:Date.now(),endedAt:null,todoId:S.draftTodo||null};save();screen='run';render()}
   else if(a==='stop'){S.run.endedAt=Date.now();save();screen='judge';render()}
   else if(a==='to-edit'){pickAmt=S.run.amount||100;screen='edit';render();upPrev()}
   else if(a==='back-judge'){screen='judge';render()}
-  else if(a==='amt'){pickAmt=+el.dataset.v;document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',+c.dataset.v===pickAmt));upPrev()}
+  else if(a==='amt'){pickAmt=+el.dataset.v;document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',+c.dataset.v===pickAmt));const cm=$('#ecmt');if(cm)cm.placeholder=cmtPH();upPrev()}
   else if(a==='deposit')deposit();
   else if(a==='tear')tear();
   else if(a==='tab'){tab=el.dataset.v;sel={a:null,b:null};render()}
@@ -319,16 +366,17 @@ function pick(id){
 }
 function deposit(){
   const text=$('#etxt').value.trim();if(!text){toast('やったことを書いてな');return}
-  const r=S.run;
-  S.coins.push({id:uid(),text,origText:r.text,amount:pickAmt,status:'saved',startedAt:r.startedAt,endedAt:r.endedAt,batchId:null});
-  S.run=null;S.draft='';save();
+  const r=S.run;const comment=($('#ecmt').value||'').trim();
+  S.coins.push({id:uid(),text,origText:r.text,amount:pickAmt,comment,status:'saved',registeredAt:Date.now(),batchId:null});
+  if(r.todoId)S.todos=S.todos.filter(t=>t.id!==r.todoId);
+  S.run=null;S.draft='';S.draftTodo=null;save();
   const p=$('#prev');if(p)p.firstElementChild.classList.add('drop');
   setTimeout(()=>{tab='avail';sel={a:null,b:null};screen='bank';render();toast(`${pickAmt}円、貯金箱に入ったで！`)},650);
 }
 function tear(){
   const r=S.run;
-  S.coins.push({id:uid(),text:r.text,origText:r.text,amount:r.amount||100,status:'failed',startedAt:r.startedAt,endedAt:r.endedAt,batchId:null});
-  S.run=null;S.draft='';save();
+  S.coins.push({id:uid(),text:r.text,origText:r.text,amount:r.amount||100,status:'failed',registeredAt:Date.now(),batchId:null});
+  S.run=null;S.draft='';S.draftTodo=null;save();
   const html=paper(r.text,r.amount||100);
   $('#prev').innerHTML=`<div class="tear"><div class="half l">${html}</div><div class="half r">${html}</div></div>`;
   setTimeout(()=>{tab='failed';sel={a:null,b:null};screen='bank';render();toast('ちぎった。次はいけるで')},900);
@@ -337,7 +385,7 @@ function spendModal(){
   const ids=rangeIds();const cs=S.coins.filter(c=>ids.includes(c.id));const total=cs.reduce((s,c)=>s+c.amount,0);
   const m=document.createElement('div');m.className='modal';
   m.innerHTML=`<div class="sheet"><h3>この小銭の権利、ほんまに使う？</h3><div class="tot">${total}円</div>
-  <div style="color:var(--sub);font-size:14px">${cs.length}枚分（${fmt(Math.min(...cs.map(c=>c.endedAt)))} 〜 ${fmt(Math.max(...cs.map(c=>c.endedAt)))}）</div>
+  <div style="color:var(--sub);font-size:14px">${cs.length}枚分（${fmt(Math.min(...cs.map(regAt)))} 〜 ${fmt(Math.max(...cs.map(regAt)))}）</div>
   <label><input type="checkbox" id="ok"><span>一回使ったら元に戻せへんことを分かってる</span></label>
   <button class="btn red" id="go" disabled>${total}円分を使う</button><button class="btn ghost" id="no">やめとく</button></div>`;
   document.body.appendChild(m);
