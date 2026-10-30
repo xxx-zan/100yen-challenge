@@ -29,7 +29,7 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 #app{position:fixed;inset:0}
 
 /* ---------- 付箋(コイン) ---------- */
-.stage{position:absolute;inset:0 0 calc(76px + env(safe-area-inset-bottom)) 0;padding:calc(env(safe-area-inset-top) + var(--edge) + 58px) 14px 6px;display:flex;align-items:center;justify-content:center;perspective:1400px;touch-action:pan-y}
+.stage{position:absolute;inset:0 0 calc(76px + env(safe-area-inset-bottom)) 0;padding:calc(env(safe-area-inset-top) + var(--edge) + 80px) 14px 6px;display:flex;align-items:center;justify-content:center;perspective:1400px;touch-action:pan-y}
 .card{position:relative;width:min(100%,520px);height:100%;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.2,.8,.2,1)}
 .card.drag{transition:none}
 .card .front{transition:visibility 0s linear .27s}
@@ -58,7 +58,16 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 .btn.sm{padding:10px 14px;font-size:14px;border-radius:12px;width:auto;display:inline-block}
 
 /* ---------- 本日のラウンド帯 ---------- */
-#day{position:fixed;top:0;left:0;right:0;z-index:18;display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + var(--edge)) 14px 6px;background:var(--bg);isolation:isolate;-webkit-transform:translateZ(0);transform:translateZ(0)}
+#day{position:fixed;top:0;left:0;right:0;z-index:18;padding:calc(env(safe-area-inset-top) + var(--edge)) 14px 8px;background:var(--bg);isolation:isolate;-webkit-transform:translateZ(0);transform:translateZ(0)}
+#day .r1{display:flex;align-items:center;gap:6px}
+#day .btn.sm{padding:9px 11px}
+#day .msg{margin-top:5px;min-height:18px;font-size:12.5px;font-weight:800;color:var(--sub);white-space:nowrap;overflow:hidden}
+#day.live{background:linear-gradient(90deg,#ff3b2f,#ff8a00);color:#fff}
+#day.live .dl,#day.live .dl b,#day.live .msg{color:#fff;text-shadow:0 1px 2px rgba(120,20,0,.35)}
+#day.live .btn.brass{background:#fff;color:#c2300a}
+#day.live .btn.ghost{color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.8) inset}
+#day.rest{background:color-mix(in srgb,var(--sub) 16%,var(--bg))}
+body.live::after{content:"";position:fixed;inset:0;border-radius:46px;box-shadow:inset 0 0 0 4px #ff5a1f;pointer-events:none;z-index:17}
 #day .dl{flex:1;font-weight:800;font-size:13px;color:var(--sub)}
 #day .dl b{font-family:var(--num);font-size:19px;color:var(--brass)}
 /* ---------- ナビ ---------- */
@@ -70,7 +79,7 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 #nav.hide{display:none}
 
 /* ---------- 汎用ページ ---------- */
-.page{position:absolute;inset:0;overflow:auto;padding:calc(env(safe-area-inset-top) + var(--edge) + 64px) 18px calc(110px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto;-webkit-overflow-scrolling:touch}
+.page{position:absolute;inset:0;overflow:auto;padding:calc(env(safe-area-inset-top) + var(--edge) + 86px) 18px calc(110px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto;-webkit-overflow-scrolling:touch}
 .page.nonav{padding-bottom:calc(30px + env(safe-area-inset-bottom))}
 .page h2{margin:0 0 14px;font-size:22px}
 .meta{color:var(--sub);font-size:14px;margin:10px 0 18px}
@@ -93,7 +102,7 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 @keyframes drop{to{transform:translateY(62dvh) scale(.18) rotate(14deg);opacity:0}}
 
 /* ---------- 実行中 ---------- */
-.run{position:absolute;inset:0;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + var(--edge) + 62px) 18px calc(18px + env(safe-area-inset-bottom));gap:14px;max-width:560px;margin:0 auto}
+.run{position:absolute;inset:0;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + var(--edge) + 84px) 18px calc(18px + env(safe-area-inset-bottom));gap:14px;max-width:560px;margin:0 auto}
 .run .mini{flex:none;height:auto;width:100%;aspect-ratio:85.6/54;padding:14px 18px}
 .run .mini .ptxt{font-size:30px;line-height:1.35;margin-top:18px}
 .run .mini .tiny{position:absolute;left:16px;top:10px;font-family:var(--num);font-weight:700;font-size:11px;opacity:.4}
@@ -187,7 +196,7 @@ function day(){
   const k=dkey();
   if(!S.day||S.day.date!==k){
     if(S.day&&S.day.rounds.length){const l=S.day.rounds[S.day.rounds.length-1];if(!l.endedAt){
-      const [y,m,d]=S.day.date.split('-').map(Number);l.endedAt=new Date(y,m-1,d,23,59,59).getTime();l.result='auto';
+      const [y,m,d]=S.day.date.split('-').map(Number);l.endedAt=new Date(y,m-1,d,23,59,59).getTime();l.result='auto';if(l.paused){const q=(l.pauses||[])[l.pauses.length-1];if(q&&!q.e)q.e=l.endedAt;l.paused=false}
       const amt=settle(l);setTimeout(()=>toast(`昨日のラウンドは自動で締めたで（${amt}円）`),400);
     }
     S.days.push(S.day)}
@@ -198,10 +207,15 @@ function day(){
 const cur=()=>{const r=day().rounds,l=r[r.length-1];return l&&!l.endedAt?l:null};
 function rDay(){
   const el=$('#day');if(!el)return;
-  const D=day(),a=cur(),n=D.rounds.length+1;
-  el.innerHTML=a?`<span class="dl">R${a.no}　○<b>${a.held}</b>　✕<b>${a.slipped}</b>/3</span><button class="btn sm brass" data-act="reach">手が伸びた</button><button class="btn sm ghost" data-act="rclose">締める</button>`
-    :(D.over||D.rounds.length>=3)?`<span class="dl">今日のラウンドは終了</span>`
-    :`<span class="dl">${D.rounds.length?'':'今日のラウンド'}</span><button class="btn sm brass" data-act="rstart">ラウンド${n} 開始</button>`;
+  const D=day(),a=cur(),n=D.rounds.length+1,live=!!a&&!a.paused;
+  document.body.classList.toggle('live',live);
+  el.className=live?'live':(a?'rest':'');
+  let r1,msg;
+  if(live){r1=`<span class="dl">R${a.no}　○<b>${a.held}</b>　✕<b>${a.slipped}</b>/3</span><button class="btn sm brass" data-act="reach">手が伸びた</button><button class="btn sm ghost" data-act="rpause">中断</button><button class="btn sm ghost" data-act="rclose">締める</button>`;msg='🔥 挑戦中｜逃げへんって決めた時間や';}
+  else if(a){r1=`<span class="dl">R${a.no}　中断中</span><button class="btn sm brass" data-act="rresume">再開する</button><button class="btn sm ghost" data-act="rclose">締める</button>`;msg='中断中。戻ったら「再開する」を押してな';}
+  else if(D.over||D.rounds.length>=3){r1=`<span class="dl">今日のラウンドは終了</span>`;msg='おつかれさん。明日また始めよか';}
+  else{r1=`<span class="dl">今日のラウンド</span><button class="btn sm brass" data-act="rstart">ラウンド${n} 開始</button>`;msg='始める時は「開始」を押してな';}
+  el.innerHTML=`<div class="r1">${r1}</div><div class="msg">${msg}</div>`;
 }
 setInterval(()=>rDay(),60000);
 function refresh(){rDay();if(screen==='bank'||screen==='note')render()}
@@ -213,8 +227,8 @@ function settle(a){
   return amt;
 }
 function reach(){
-  const a=cur();if(!a)return;
-  sheet(`<h3>手が伸びた。どうした？</h3><button class="btn brass" id="h">踏みとどまった</button><button class="btn ghost" id="s">見ちゃった</button><button class="btn ghost" id="c">間違えて押した</button>`,m=>{
+  const a=cur();if(!a||a.paused)return;
+  sheet(`<h3>手が伸びた。まず1呼吸。どうした？</h3><button class="btn brass" id="h">踏みとどまった</button><button class="btn ghost" id="s">見ちゃった</button><button class="btn ghost" id="c">間違えて押した</button>`,m=>{
     m.querySelector('#h').onclick=()=>{m.remove();hold()};
     m.querySelector('#s').onclick=()=>{m.remove();slip()};
     m.querySelector('#c').onclick=()=>m.remove();
@@ -297,7 +311,7 @@ function rNote(app){
 function drawZone(){
   const z=$('#zone');if(!z)return;
   if(editing){
-    z.innerHTML=`<textarea id="ta" placeholder="先延ばししてること、何やる？"></textarea>`;
+    z.innerHTML=`<textarea id="ta" placeholder="何やる？"></textarea>`;
     const ta=$('#ta');ta.value=S.draft;ta.focus();
     ta.addEventListener('input',()=>{S.draft=ta.value;save();upStart()});
     ta.addEventListener('blur',()=>{editing=false;drawZone()});
@@ -368,7 +382,7 @@ function rBank(app){
     const ds=[S.day,...S.days.slice().reverse()].filter(d=>d&&d.rounds.length);
     body=ds.length?ds.map(d=>`<details class="batch"><summary><span>${d.date}</span><span class="n">${d.rounds.length}R</span></summary>${d.rounds.map(x=>{
       const bs=x.ev.filter(e=>e.k==='b').map(e=>e.m+'分').join('・');
-      return `<div class="row"><span>R${x.no}　手が伸びた${x.held+x.slipped}回（○${x.held} ✕${x.slipped}）${bs?`<br><small>戻るまで: ${bs}</small>`:''}${x.reason?`<br><small>${esc(x.reason)}</small>`:''}</span><b>${x.endedAt?(lab[x.result]||'')+(x.paid!=null?' '+x.paid+'円':''):'進行中'}</b></div>`}).join('')}</details>`).join('')
+      return `<div class="row"><span>R${x.no}　手が伸びた${x.held+x.slipped}回（○${x.held} ✕${x.slipped}）${x.pauses&&x.pauses.length?`　中断${x.pauses.length}回`:''}${bs?`<br><small>戻るまで: ${bs}</small>`:''}${x.reason?`<br><small>${esc(x.reason)}</small>`:''}</span><b>${x.endedAt?(lab[x.result]||'')+(x.paid!=null?' '+x.paid+'円':''):'進行中'}</b></div>`}).join('')}</details>`).join('')
       :`<div class="empty">まだラウンド記録はないで。</div>`;
   }
   const total=list.filter(c=>ids.has(c.id)).reduce((s,c)=>s+c.amount,0);
@@ -385,14 +399,16 @@ function rBank(app){
 document.addEventListener('click',e=>{
   const el=e.target.closest('[data-act]');if(!el)return;
   const a=el.dataset.act;
-  if(a==='rstart'){const D=day();if(D.over||cur()||D.rounds.length>=3)return;D.rounds.push({no:D.rounds.length+1,startedAt:Date.now(),endedAt:null,held:0,slipped:0,ev:[]});save();refresh();toast(`ラウンド${D.rounds.length}、開始！`)}
+  if(a==='rstart'){const D=day();if(D.over||cur()||D.rounds.length>=3)return;D.rounds.push({no:D.rounds.length+1,startedAt:Date.now(),endedAt:null,held:0,slipped:0,ev:[],paused:false,pauses:[]});save();refresh();toast(`ラウンド${D.rounds.length}、開始！`)}
+  else if(a==='rpause'){const x=cur();if(!x||x.paused)return;x.pauses=x.pauses||[];x.paused=true;x.pauses.push({s:Date.now(),e:null});save();refresh();toast('中断中。戻ったら「再開する」を押してな')}
+  else if(a==='rresume'){const x=cur();if(!x||!x.paused)return;const q=(x.pauses||[])[x.pauses.length-1];if(q&&!q.e)q.e=Date.now();x.paused=false;save();refresh();toast('再開！ここから逃げへん時間や')}
   else if(a==='reach')reach();
   else if(a==='rclose'){const x=cur();if(!x)return;if(screen!=='redit')rPrev=screen;pickAmt=MULT[x.no-1];screen='redit';render();upPrev()}
   else if(a==='rback'){screen=rPrev;render()}
   else if(a==='rdeposit'){
     const x=cur();if(!x){screen=rPrev;render();return}
     const reason=$('#etxt').value.trim(),t=Date.now();
-    x.endedAt=t;x.result='done';x.paid=pickAmt;x.reason=reason;day().over=true;
+    x.endedAt=t;x.result='done';if(x.paused){const q=(x.pauses||[])[x.pauses.length-1];if(q&&!q.e)q.e=t;x.paused=false}x.paid=pickAmt;x.reason=reason;day().over=true;
     S.coins.push({id:uid(),text:reason||`ラウンド${x.no}を締めた`,origText:'',amount:pickAmt,status:'saved',kind:'round',meta:`ラウンド${x.no}　手が伸びた${x.held+x.slipped}回（○${x.held} ✕${x.slipped}）`,startedAt:t,endedAt:t,batchId:null});
     save();screen=rPrev;render();toast(`${pickAmt}円、貯金箱に入ったで！`);
   }
