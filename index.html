@@ -12,6 +12,7 @@
 <title>100円付箋</title>
 <style>
 :root{
+  --edge:46px; /* iOSが上端にかける自動ぼかしを避けるための余白 */
   --bg:#dde5e8; --panel:#f3f7f8; --ink:#1b2a2f; --sub:#5a6e75; --line:#c3d0d5;
   --brass:#c8922a; --brass-ink:#2d1d00; --red:#c4412b; --ok:#2f7d5b;
   --font:ui-rounded,"Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
@@ -28,7 +29,7 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 #app{position:fixed;inset:0}
 
 /* ---------- 付箋(コイン) ---------- */
-.stage{position:absolute;inset:0 0 calc(76px + env(safe-area-inset-bottom)) 0;padding:calc(env(safe-area-inset-top) + 58px) 14px 6px;display:flex;align-items:center;justify-content:center;perspective:1400px;touch-action:pan-y}
+.stage{position:absolute;inset:0 0 calc(76px + env(safe-area-inset-bottom)) 0;padding:calc(env(safe-area-inset-top) + var(--edge) + 58px) 14px 6px;display:flex;align-items:center;justify-content:center;perspective:1400px;touch-action:pan-y}
 .card{position:relative;width:min(100%,520px);height:100%;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.2,.8,.2,1)}
 .card.drag{transition:none}
 .card .front{transition:visibility 0s linear .27s}
@@ -57,7 +58,7 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 .btn.sm{padding:10px 14px;font-size:14px;border-radius:12px;width:auto;display:inline-block}
 
 /* ---------- 本日のラウンド帯 ---------- */
-#day{position:fixed;top:0;left:0;right:0;z-index:18;display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 4px) 14px 6px;background:var(--bg);isolation:isolate;-webkit-transform:translateZ(0);transform:translateZ(0)}
+#day{position:fixed;top:0;left:0;right:0;z-index:18;display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + var(--edge)) 14px 6px;background:var(--bg);isolation:isolate;-webkit-transform:translateZ(0);transform:translateZ(0)}
 #day .dl{flex:1;font-weight:800;font-size:13px;color:var(--sub)}
 #day .dl b{font-family:var(--num);font-size:19px;color:var(--brass)}
 /* ---------- ナビ ---------- */
@@ -69,7 +70,7 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 #nav.hide{display:none}
 
 /* ---------- 汎用ページ ---------- */
-.page{position:absolute;inset:0;overflow:auto;padding:calc(env(safe-area-inset-top) + 64px) 18px calc(110px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto;-webkit-overflow-scrolling:touch}
+.page{position:absolute;inset:0;overflow:auto;padding:calc(env(safe-area-inset-top) + var(--edge) + 64px) 18px calc(110px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto;-webkit-overflow-scrolling:touch}
 .page.nonav{padding-bottom:calc(30px + env(safe-area-inset-bottom))}
 .page h2{margin:0 0 14px;font-size:22px}
 .meta{color:var(--sub);font-size:14px;margin:10px 0 18px}
@@ -92,7 +93,7 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 @keyframes drop{to{transform:translateY(62dvh) scale(.18) rotate(14deg);opacity:0}}
 
 /* ---------- 実行中 ---------- */
-.run{position:absolute;inset:0;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 62px) 18px calc(18px + env(safe-area-inset-bottom));gap:14px;max-width:560px;margin:0 auto}
+.run{position:absolute;inset:0;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + var(--edge) + 62px) 18px calc(18px + env(safe-area-inset-bottom));gap:14px;max-width:560px;margin:0 auto}
 .run .mini{flex:none;height:auto;width:100%;aspect-ratio:85.6/54;padding:14px 18px}
 .run .mini .ptxt{font-size:30px;line-height:1.35;margin-top:18px}
 .run .mini .tiny{position:absolute;left:16px;top:10px;font-family:var(--num);font-weight:700;font-size:11px;opacity:.4}
@@ -144,7 +145,7 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 .sheet .tot{font-family:var(--num);font-weight:800;font-size:60px;line-height:1;color:var(--brass)}
 .sheet label{display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.5;font-weight:700}
 .sheet input[type=checkbox]{width:24px;height:24px;flex:none;accent-color:var(--red)}
-#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 56px);transform:translate(-50%,-30px);opacity:0;visibility:hidden;background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:14px;font-weight:700;font-size:14px;transition:transform .3s,opacity .3s,visibility 0s linear .3s;z-index:30;max-width:90vw;text-align:center}
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + var(--edge) + 52px);transform:translate(-50%,-30px);opacity:0;visibility:hidden;background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:14px;font-weight:700;font-size:14px;transition:transform .3s,opacity .3s,visibility 0s linear .3s;z-index:30;max-width:90vw;text-align:center}
 #toast.show{transform:translate(-50%,0);opacity:1;visibility:visible;transition:transform .3s,opacity .3s,visibility 0s}
 @media (prefers-reduced-motion:reduce){.card{transition-duration:.01s}.tear .l,.tear .r,.drop{animation-duration:.01s}}
 </style>
