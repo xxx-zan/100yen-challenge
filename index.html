@@ -28,7 +28,7 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 #app{position:fixed;inset:0}
 
 /* ---------- 付箋(コイン) ---------- */
-.stage{position:absolute;inset:0 0 calc(76px + env(safe-area-inset-bottom)) 0;padding:calc(env(safe-area-inset-top) + 14px) 14px 6px;display:flex;align-items:center;justify-content:center;perspective:1400px;touch-action:pan-y}
+.stage{position:absolute;inset:0 0 calc(76px + env(safe-area-inset-bottom)) 0;padding:calc(env(safe-area-inset-top) + 58px) 14px 6px;display:flex;align-items:center;justify-content:center;perspective:1400px;touch-action:pan-y}
 .card{position:relative;width:min(100%,520px);height:100%;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.2,.8,.2,1)}
 .card.drag{transition:none}
 .card .front{transition:visibility 0s linear .27s}
@@ -42,7 +42,7 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 .back{transform:rotateY(180deg);background:#fbf6e4;color:#33290f;padding:26px 22px 22px;display:flex;flex-direction:column;gap:12px;
   background-image:repeating-linear-gradient(transparent 0 35px,rgba(120,100,40,.16) 35px 36px)}
 .back .lbl{font-weight:800;font-size:15px;color:#7a6322}
-#zone{flex:1;min-height:84px;display:flex}
+#zone{flex:1;min-height:0;display:flex}
 #txt,#zone textarea{flex:1;width:100%;font-size:24px;line-height:36px;padding:0;border:0;background:transparent;color:#33290f;resize:none;outline:none}
 #txt{white-space:pre-wrap;overflow:auto}
 #txt.ph{color:#a89a68}
@@ -56,19 +56,10 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 .btn.red{background:var(--red);color:#fff}
 .btn.sm{padding:10px 14px;font-size:14px;border-radius:12px;width:auto;display:inline-block}
 
-/* ---------- 今日のリスト ---------- */
-.tl-h{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:14px;color:#7a6322}
-.tl-h button{border:0;border-radius:10px;padding:6px 10px;font-weight:800;font-size:13px;background:rgba(120,100,40,.16);color:#5b4a14;cursor:pointer}
-.tl{max-height:26dvh;overflow:auto;display:flex;flex-direction:column;gap:6px;-webkit-overflow-scrolling:touch}
-.ti{flex:none;border:0;text-align:left;border-radius:12px;padding:10px 12px;font-weight:700;font-size:16px;line-height:1.35;background:rgba(120,100,40,.12);color:#33290f;cursor:pointer}
-.ti.on{background:#e6c35f;box-shadow:0 0 0 2px #a8841f inset}
-.tl-empty{font-size:13px;color:#8a7a45;line-height:1.5}
-.trow{display:flex;gap:10px;align-items:center;padding:12px;border-radius:14px;background:var(--panel);box-shadow:0 0 0 1.5px var(--line) inset;margin-bottom:8px}
-.trow span{flex:1;font-weight:700;line-height:1.35;word-break:break-word}
-.trow button{border:0;border-radius:10px;padding:8px 12px;font-weight:800;font-size:13px;background:transparent;color:var(--red);box-shadow:0 0 0 1.5px var(--line) inset;cursor:pointer}
-.cmt{display:block;margin-top:3px;font-size:12.5px;line-height:1.4;color:var(--sub)}
-.item .t small.cmt{color:var(--ink);opacity:.85;margin-top:4px}
-
+/* ---------- 本日のラウンド帯 ---------- */
+#day{position:fixed;top:0;left:0;right:0;z-index:15;display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 4px) 14px 4px;background:color-mix(in srgb,var(--bg) 92%,transparent)}
+#day .dl{flex:1;font-weight:800;font-size:13px;color:var(--sub)}
+#day .dl b{font-family:var(--num);font-size:19px;color:var(--brass)}
 /* ---------- ナビ ---------- */
 #nav{position:fixed;left:0;right:0;bottom:0;display:flex;gap:10px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 35%)}
 #nav button{flex:1;border:0;border-radius:16px;padding:13px 8px;font-weight:800;font-size:15px;background:var(--panel);box-shadow:0 0 0 1.5px var(--line) inset;cursor:pointer}
@@ -78,7 +69,7 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 #nav.hide{display:none}
 
 /* ---------- 汎用ページ ---------- */
-.page{position:absolute;inset:0;overflow:auto;padding:calc(env(safe-area-inset-top) + 20px) 18px calc(110px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto;-webkit-overflow-scrolling:touch}
+.page{position:absolute;inset:0;overflow:auto;padding:calc(env(safe-area-inset-top) + 64px) 18px calc(110px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto;-webkit-overflow-scrolling:touch}
 .page.nonav{padding-bottom:calc(30px + env(safe-area-inset-bottom))}
 .page h2{margin:0 0 14px;font-size:22px}
 .meta{color:var(--sub);font-size:14px;margin:10px 0 18px}
@@ -101,16 +92,17 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 @keyframes drop{to{transform:translateY(62dvh) scale(.18) rotate(14deg);opacity:0}}
 
 /* ---------- 実行中 ---------- */
-.run{position:absolute;inset:0;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 18px) 18px calc(18px + env(safe-area-inset-bottom));gap:14px;max-width:560px;margin:0 auto}
+.run{position:absolute;inset:0;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 62px) 18px calc(18px + env(safe-area-inset-bottom));gap:14px;max-width:560px;margin:0 auto}
 .run .mini{flex:none;height:auto;width:100%;aspect-ratio:85.6/54;padding:14px 18px}
 .run .mini .ptxt{font-size:30px;line-height:1.35;margin-top:18px}
 .run .mini .tiny{position:absolute;left:16px;top:10px;font-family:var(--num);font-weight:700;font-size:11px;opacity:.4}
 .timer{flex:1;display:flex;align-items:center;justify-content:center;font-family:var(--num);font-weight:800;font-size:64px;text-align:center;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.praise{margin:0 0 14px;padding:14px 16px;border-radius:16px;font-weight:800;font-size:17px;line-height:1.55;background:color-mix(in srgb,var(--brass) 18%,var(--panel));box-shadow:0 0 0 2px var(--brass) inset}
 .hint{font-size:12px;text-align:center;color:var(--sub);opacity:.8}
 
 /* ---------- 金額チップ ---------- */
-.chips{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
-.chip{border:0;border-radius:14px;padding:14px 0;font-family:var(--num);font-weight:800;font-size:20px;background:var(--panel);box-shadow:0 0 0 1.5px var(--line) inset;cursor:pointer}
+.chips{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.chip{border:0;border-radius:14px;padding:14px 0;font-family:var(--num);font-weight:800;font-size:22px;background:var(--panel);box-shadow:0 0 0 1.5px var(--line) inset;cursor:pointer}
 .chip.on{background:var(--brass);color:var(--brass-ink);box-shadow:none}
 .field{width:100%;min-height:120px;border:0;border-radius:16px;padding:14px;font-size:18px;line-height:1.5;background:var(--panel);color:var(--ink);box-shadow:0 0 0 1.5px var(--line) inset;outline:none;resize:vertical}
 .lab{font-weight:800;font-size:14px;color:var(--sub);margin:6px 0}
@@ -120,7 +112,7 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 .bal .n{font-family:var(--num);font-weight:800;font-size:68px;line-height:1;color:var(--brass)}
 .bal .y{font-weight:800;font-size:22px}
 .tabs{display:flex;gap:6px;margin:14px 0}
-.tabs button{flex:1;border:0;border-radius:12px;padding:10px 4px;font-weight:800;font-size:13.5px;background:transparent;box-shadow:0 0 0 1.5px var(--line) inset;cursor:pointer}
+.tabs button{flex:1;border:0;border-radius:12px;padding:10px 2px;font-weight:800;font-size:12px;background:transparent;box-shadow:0 0 0 1.5px var(--line) inset;cursor:pointer}
 .tabs button.on{background:var(--ink);color:var(--bg);box-shadow:none}
 .help{font-size:13px;line-height:1.5;color:var(--sub);margin:0 0 10px}
 .item{display:flex;gap:12px;align-items:center;padding:12px;border-radius:16px;background:var(--panel);box-shadow:0 0 0 1.5px var(--line) inset;margin-bottom:8px;cursor:pointer}
@@ -160,13 +152,15 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 <body>
 <div id="app"></div>
 <div id="nav" class="hide"></div>
+<div id="day"></div>
 <div id="toast"></div>
 
 <script>
 /* ===== データ ===== */
 const KEY='coinNote.v1';
-const blank=()=>({coins:[],batches:[],run:null,draft:'',todos:[],draftTodo:null});
+const blank=()=>({coins:[],batches:[],run:null,draft:'',day:null,days:[]});
 let S=load();
+if(!Array.isArray(S.days))S.days=[];
 function load(){try{const j=JSON.parse(localStorage.getItem(KEY));if(j&&Array.isArray(j.coins))return Object.assign(blank(),j)}catch(e){}return blank()}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('保存に失敗したで。バックアップ取っといて！')}}
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
@@ -180,10 +174,86 @@ const hm=t=>{const d=new Date(t);return `${p2(d.getHours())}:${p2(d.getMinutes()
 const dur=(a,b)=>{const m=Math.max(0,Math.round((b-a)/60000));return m<60?`${m}分`:`${Math.floor(m/60)}時間${m%60}分`};
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2400)}
-const regAt=c=>c.registeredAt||c.endedAt||0;
-const avail=()=>S.coins.filter(c=>c.status==='saved'&&!c.batchId).sort((a,b)=>regAt(b)-regAt(a));
+const avail=()=>S.coins.filter(c=>c.status==='saved'&&!c.batchId).sort((a,b)=>b.endedAt-a.endedAt);
 const balance=()=>avail().reduce((s,c)=>s+c.amount,0);
 const paper=(t,a)=>`<div class="mini"><div class="amtline"><span class="n">${a}</span><span class="y">円</span></div><div class="ptxt">${esc(t)}</div></div>`;
+
+/* ===== 本日のラウンド(タスクとは独立・並行) ===== */
+const MULT=[100,50,20],HOLD=[20,10,5];
+const PRAISE=['逃げたくなる気持ちをばっちりコントロールできたな！今日のあんた、ほんまに立派やで！','一回転んでも、ちゃんと立ち上がってやり切った。立て直せる人は強いで！','逃げたかもしれんけど、諦めずにようやった！胸張ってええで！'];
+const dkey=()=>{const d=new Date();return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`};
+function day(){
+  const k=dkey();
+  if(!S.day||S.day.date!==k){
+    if(S.day&&S.day.rounds.length){const l=S.day.rounds[S.day.rounds.length-1];if(!l.endedAt){
+      const [y,m,d]=S.day.date.split('-').map(Number);l.endedAt=new Date(y,m-1,d,23,59,59).getTime();l.result='auto';
+      const amt=settle(l);setTimeout(()=>toast(`昨日のラウンドは自動で締めたで（${amt}円）`),400);
+    }
+    S.days.push(S.day)}
+    S.day={date:k,rounds:[],over:false};save();
+  }
+  return S.day;
+}
+const cur=()=>{const r=day().rounds,l=r[r.length-1];return l&&!l.endedAt?l:null};
+function rDay(){
+  const el=$('#day');if(!el)return;
+  const D=day(),a=cur(),n=D.rounds.length+1;
+  el.innerHTML=a?`<span class="dl">R${a.no}　○<b>${a.held}</b>　✕<b>${a.slipped}</b>/3</span><button class="btn sm brass" data-act="reach">手が伸びた</button><button class="btn sm ghost" data-act="rclose">締める</button>`
+    :(D.over||D.rounds.length>=3)?`<span class="dl">今日のラウンドは終了</span>`
+    :`<span class="dl">${D.rounds.length?'':'今日のラウンド'}</span><button class="btn sm brass" data-act="rstart">ラウンド${n} 開始</button>`;
+}
+setInterval(()=>rDay(),60000);
+function refresh(){rDay();if(screen==='bank'||screen==='note')render()}
+function sheet(html,setup){const m=document.createElement('div');m.className='modal';m.innerHTML=`<div class="sheet">${html}</div>`;document.body.appendChild(m);setup(m)}
+let rPrev='note';
+function settle(a){
+  const amt=MULT[a.no-1];a.paid=amt;const t=a.endedAt;
+  S.coins.push({id:uid(),text:`ラウンド${a.no}（自動で締め）`,origText:'',amount:amt,status:'saved',kind:'round',meta:`手が伸びた${a.held+a.slipped}回（○${a.held} ✕${a.slipped}）`,startedAt:t,endedAt:t,batchId:null});
+  return amt;
+}
+function reach(){
+  const a=cur();if(!a)return;
+  sheet(`<h3>手が伸びた。どうした？</h3><button class="btn brass" id="h">踏みとどまった</button><button class="btn ghost" id="s">見ちゃった</button><button class="btn ghost" id="c">間違えて押した</button>`,m=>{
+    m.querySelector('#h').onclick=()=>{m.remove();hold()};
+    m.querySelector('#s').onclick=()=>{m.remove();slip()};
+    m.querySelector('#c').onclick=()=>m.remove();
+  });
+}
+function hold(){
+  const a=cur(),t=Date.now();a.held++;a.ev.push({k:'h',t});
+  save();refresh();toast(`踏みとどまった（○${a.held}）`);
+}
+function slip(){
+  const a=cur(),t=Date.now();a.slipped++;a.ev.push({k:'s',t});a.lastSlip=t;save();
+  if(a.slipped<3){refresh();toast(`見ちゃった（${a.slipped}/3）。戻ってこれたらそれでええ`);return}
+  a.endedAt=t;a.result='fail';a.paid=0;a.lastSlip=null;const n=a.no;
+  if(n>=3)day().over=true;
+  save();refresh();
+  if(n<3)sheet(`<h3>3回見ちゃった</h3><div>ラウンド${n}はここまで（入金なし）。<br>ラウンド${n+1}いく？</div><button class="btn brass" id="y">いく（上の「開始」で始める）</button><button class="btn ghost" id="e">今日は終わり</button>`,m=>{
+    m.querySelector('#y').onclick=()=>m.remove();
+    m.querySelector('#e').onclick=()=>{m.remove();day().over=true;save();refresh()};
+  });
+  else sheet(`<h3>3回見ちゃった</h3><div>全ラウンド終了。今日のラウンドはここまで。</div><button class="btn brass" id="e">わかった</button>`,m=>{m.querySelector('#e').onclick=()=>m.remove()});
+}
+function rREdit(app){
+  const a=cur();if(!a){screen=rPrev==='redit'?'note':rPrev;render();return}
+  app.innerHTML=`<div class="page nonav"><h2>ラウンド${a.no}を締める前に確認</h2>
+  <div class="praise">${PRAISE[a.no-1]}</div>
+  <div class="meta" style="margin:0 0 12px">手が伸びた${a.held+a.slipped}回（踏みとどまった${a.held}回／見ちゃった${a.slipped}回）</div>
+  <div class="lab">理由・ひとこと（今日はどうやった？）</div>
+  <textarea class="field" id="etxt" placeholder="なんでこの金額にしたか、書いとこ"></textarea>
+  <div class="lab" style="margin-top:14px">金額（出来高で下げてええで）</div>
+  <div class="chips">${[10,20,30,40,50,60,70,80,90,100].map(n=>`<button class="chip ${n===pickAmt?'on':''}" data-act="amt" data-v="${n}">${n}</button>`).join('')}</div>
+  <div class="stack" style="margin-top:20px"><div id="prev"></div>
+  <button class="btn brass" data-act="rdeposit">貯金箱に入れる</button>
+  <button class="btn ghost" data-act="rback">戻る</button></div></div>`;
+}
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden)return;
+  const a=cur();
+  if(a&&a.lastSlip){const m=Math.round((Date.now()-a.lastSlip)/60000);a.ev.push({k:'b',t:Date.now(),m});a.lastSlip=null;save();toast(`${m}分で戻ってきた。戻れたのが偉い`)}
+  rDay();
+});
 
 /* ===== 画面状態 ===== */
 const isFlipped=()=>((Math.round(rot/180)%2)+2)%2===1;
@@ -199,20 +269,21 @@ function render(){
   if(showNav){
     nav.innerHTML=`<button data-act="go-note" class="${screen==='note'?'on':''}">付箋</button><button data-act="go-bank" class="${screen==='bank'?'on':''}">貯金箱<b>${balance()}円</b></button>`;
   }
-  ({note:rNote,run:rRun,judge:rJudge,edit:rEdit,bank:rBank,todos:rTodos})[screen](app);
+  rDay();
+  ({note:rNote,run:rRun,judge:rJudge,edit:rEdit,bank:rBank,redit:rREdit})[screen](app);
 }
 
 /* ---- 付箋 ---- */
 function rNote(app){
   app.innerHTML=`<div class="stage" id="stage"><div class="card" id="card">
     <div class="face front"><div class="coin"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="100円玉"><defs><linearGradient id="cf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbfbfc"/><stop offset=".2" stop-color="#c7cbcf"/><stop offset=".36" stop-color="#f4f5f6"/><stop offset=".52" stop-color="#a6abb0"/><stop offset=".66" stop-color="#ececed"/><stop offset=".84" stop-color="#bdc1c5"/><stop offset="1" stop-color="#f1f2f3"/></linearGradient><linearGradient id="cr" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffffff"/><stop offset=".3" stop-color="#a9adb2"/><stop offset=".55" stop-color="#f6f6f7"/><stop offset=".8" stop-color="#979ca1"/><stop offset="1" stop-color="#ffffff"/></linearGradient><linearGradient id="gf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#d9dcdf"/><stop offset=".75" stop-color="#b6bbc0"/><stop offset="1" stop-color="#f3f4f5"/></linearGradient><linearGradient id="gi" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#f7f8f8"/><stop offset=".5" stop-color="#cfd3d6"/><stop offset="1" stop-color="#ffffff"/></linearGradient><linearGradient id="gs" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#60666c"/><stop offset=".5" stop-color="#c9cdd1"/><stop offset="1" stop-color="#7d838a"/></linearGradient><filter id="sh" x="-10%" y="-10%" width="125%" height="125%"><feDropShadow dx=".9" dy="1.4" stdDeviation=".7" flood-color="#000" flood-opacity=".35"/></filter></defs><circle cx="100" cy="100" r="98" fill="#25282c"/><circle cx="100" cy="100" r="96" fill="url(#cr)"/><circle cx="100" cy="100" r="89.5" fill="url(#cf)" stroke="#858a90" stroke-width="1.1"/><circle cx="100" cy="100" r="86.5" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1"/><g filter="url(#sh)" stroke-linejoin="round" transform="translate(0 100) scale(1 1.15) translate(0 -100)"><g transform="translate(54 100)"><polygon points="-24,-20 -2,-40 14,-40 14,28 24,28 24,40 -24,40 -24,28 -6,28 -6,-14 -24,-14" fill="url(#gf)" stroke="#3f444a" stroke-width="1.7"/><polygon points="-20.2,-18 -0.4,-36 10,-36 10,32 20,32 20,36 -20,36 -20,32 -2,32 -2,-18" fill="url(#gi)" stroke="#a3a8ad" stroke-width="1.1"/></g><g transform="translate(104 100)"><polygon points="-20,-26 0,-40 20,-26 20,26 0,40 -20,26" fill="url(#gf)" stroke="#3f444a" stroke-width="1.7"/><polygon points="-20,-26 0,-40 20,-26 20,26 0,40 -20,26" transform="scale(.8)" fill="url(#gi)" stroke="#a3a8ad" stroke-width="1.1"/><polygon points="-5,-22 0,-27 5,-22 5,22 0,27 -5,22" fill="url(#gs)" stroke="#3a3f45" stroke-width=".9"/></g><g transform="translate(148 100)"><polygon points="-20,-26 0,-40 20,-26 20,26 0,40 -20,26" fill="url(#gf)" stroke="#3f444a" stroke-width="1.7"/><polygon points="-20,-26 0,-40 20,-26 20,26 0,40 -20,26" transform="scale(.8)" fill="url(#gi)" stroke="#a3a8ad" stroke-width="1.1"/><polygon points="-5,-22 0,-27 5,-22 5,22 0,27 -5,22" fill="url(#gs)" stroke="#3a3f45" stroke-width=".9"/></g></g></svg></div><div class="sub">横にスワイプでめくる</div></div>
-    <div class="face back"><div class="lbl">いまからやること</div><div id="zone"></div><div id="todolist"></div>
+    <div class="face back"><div class="lbl">いまからやること</div><div id="zone"></div>
       <button class="btn brass" id="start" data-act="start">スタート</button>
       <div class="tip">スタートしたら、iPhoneのサイドボタンを3回押すと画面が消えなくなるで。</div></div>
   </div></div>`;
   const card=$('#card');card.style.transition='none';card.style.transform=`rotateY(${rot}deg)`;card.classList.toggle('flipped',isFlipped());
   requestAnimationFrame(()=>requestAnimationFrame(()=>card.style.transition=''));
-  drawZone();drawTodos();
+  drawZone();
   const stage=$('#stage');let x0=null,w=1;
   stage.addEventListener('pointerdown',e=>{if(e.target.closest('textarea,button'))return;x0=e.clientX;w=stage.clientWidth;card.classList.add('drag')});
   window.onpointermove=e=>{if(x0===null)return;card.style.transform=`rotateY(${rot+(e.clientX-x0)/w*180}deg)`};
@@ -227,7 +298,7 @@ function drawZone(){
   if(editing){
     z.innerHTML=`<textarea id="ta" placeholder="先延ばししてること、何やる？"></textarea>`;
     const ta=$('#ta');ta.value=S.draft;ta.focus();
-    ta.addEventListener('input',()=>{S.draft=ta.value;if(!S.draft.trim()&&S.draftTodo){S.draftTodo=null;drawTodos()}save();upStart()});
+    ta.addEventListener('input',()=>{S.draft=ta.value;save();upStart()});
     ta.addEventListener('blur',()=>{editing=false;drawZone()});
   }else{
     z.innerHTML=`<div id="txt" class="${S.draft.trim()?'':'ph'}" data-act="edit">${S.draft.trim()?esc(S.draft):'ここをタップして書く'}</div>`;
@@ -235,13 +306,6 @@ function drawZone(){
   upStart();
 }
 function upStart(){const b=$('#start');if(b)b.disabled=!S.draft.trim()}
-function drawTodos(){
-  const el=$('#todolist');if(!el)return;
-  const t=S.todos;
-  el.innerHTML=`<div class="tl-h"><span>今日のリスト${t.length?`（${t.length}）`:''}</span><button data-act="todos">登録・編集</button></div>`+
-    (t.length?`<div class="tl">${t.map(x=>`<button class="ti ${S.draftTodo===x.id?'on':''}" data-act="todo-pick" data-id="${x.id}">${esc(x.text)}</button>`).join('')}</div>`
-      :`<div class="tl-empty">リストはまだ空やで。「登録・編集」でまとめて入れられる。</div>`);
-}
 
 /* ---- 実行中 ---- */
 function rRun(app){
@@ -254,7 +318,7 @@ function rRun(app){
 function rJudge(app){
   const r=S.run;
   app.innerHTML=`<div class="page nonav"><h2>おつかれさん！</h2><div id="prev">${paper(r.text,r.amount||100)}</div>
-  <div style="height:18px"></div>
+  <div class="meta">${fmt(r.startedAt)} → ${hm(r.endedAt)}　(${dur(r.startedAt,r.endedAt)})</div>
   <div class="stack"><button class="btn brass" data-act="to-edit">貯める</button>
   <button class="btn ghost" data-act="tear">ちぎる（挑戦したけどダメやった）</button></div></div>`;
 }
@@ -264,26 +328,10 @@ function rEdit(app){
   <div class="lab">やったこと（足りんかったら書き直してな）</div>
   <textarea class="field" id="etxt">${esc(r.text)}</textarea>
   <div class="lab" style="margin-top:14px">金額（出来高で下げてええで）</div>
-  <div class="chips">${[10,20,30,40,50,60,70,80,90,100,200].map(n=>`<button class="chip ${n===pickAmt?'on':''}" data-act="amt" data-v="${n}">${n}</button>`).join('')}</div>
-  <div class="lab" style="margin-top:14px">金額の理由・コメント（任意）</div>
-  <textarea class="field" id="ecmt" style="min-height:90px" placeholder="${esc(cmtPH())}"></textarea>
+  <div class="chips">${[10,20,30,40,50,60,70,80,90,100].map(n=>`<button class="chip ${n===pickAmt?'on':''}" data-act="amt" data-v="${n}">${n}</button>`).join('')}</div>
   <div class="stack" style="margin-top:20px"><div id="prev"></div>
   <button class="btn brass" data-act="deposit">貯金箱に入れる</button>
   <button class="btn ghost" data-act="back-judge">戻る</button></div></div>`;
-}
-
-const cmtPH=()=>pickAmt!==100?'金額の根拠を残しとこう（例：半分しか終わらんかったので50円）':'気づいたことや、100円にした理由など（なくてもOK）';
-
-/* ---- 今日のリスト ---- */
-function rTodos(app){
-  const t=S.todos;
-  app.innerHTML=`<div class="page nonav"><h2>今日のリスト</h2>
-  <div class="lab">まとめて追加（1行に1件）</div>
-  <textarea class="field" id="bulk" placeholder="日報を書く&#10;見積書を確認する&#10;メールの返信"></textarea>
-  <button class="btn brass" style="margin-top:12px" data-act="todo-add">リストに追加</button>
-  <div class="lab" style="margin-top:22px">登録済み（${t.length}）</div>
-  ${t.length?t.map(x=>`<div class="trow"><span>${esc(x.text)}</span><button data-act="todo-del" data-id="${x.id}">削除</button></div>`).join(''):'<div class="empty" style="padding:18px 0">まだ空やで。</div>'}
-  <div class="stack" style="margin-top:20px"><button class="btn ghost" data-act="back-note">付箋に戻る</button>${t.length?'<button class="btn ghost" data-act="todo-clear">全部消す</button>':''}</div></div>`;
 }
 
 /* ---- 貯金箱 ---- */
@@ -298,26 +346,33 @@ function itemHTML(c,selected){
   const edited=c.origText&&c.origText!==c.text;
   return `<div class="item ${selected?'sel':''}" data-act="pick" data-id="${c.id}">
   <div class="c ${c.status==='failed'?'f':''}">${c.status==='failed'?'ダメ':c.amount}</div>
-  <div class="t"><p>${esc(c.text)}</p><small>${fmt(regAt(c))} 登録${edited?`<br><s>元: ${esc(c.origText)}</s>`:''}</small>${c.comment?`<small class="cmt">コメント：${esc(c.comment)}</small>`:''}</div></div>`;
+  <div class="t"><p>${esc(c.text)}</p><small>${c.kind?fmt(c.startedAt)+(c.meta?'<br>'+esc(c.meta):''):`${fmt(c.startedAt)} → ${hm(c.endedAt)}（${dur(c.startedAt,c.endedAt)}）`}${edited?`<br><s>元: ${esc(c.origText)}</s>`:''}</small></div></div>`;
 }
 function rBank(app){
   const list=avail(),ids=new Set(rangeIds());
   const used=S.batches.slice().sort((a,b)=>b.at-a.at);
-  const failed=S.coins.filter(c=>c.status==='failed').sort((a,b)=>regAt(b)-regAt(a));
+  const failed=S.coins.filter(c=>c.status==='failed').sort((a,b)=>b.endedAt-a.endedAt);
   let body='';
   if(tab==='avail'){
     body=list.length?`<p class="help">使う範囲は、最初の1枚→最後の1枚の順にタップ。間の分がまとめて選ばれるで。</p>`+list.map(c=>itemHTML(c,ids.has(c.id))).join('')
       :`<div class="empty">まだ使える小銭はないで。<br>付箋で1枚やりきって貯めよう。</div>`;
   }else if(tab==='used'){
     body=used.length?used.map(b=>{const cs=S.coins.filter(c=>c.batchId===b.id);
-      return `<details class="batch"><summary><span>${fmt(b.at)} に使った（${cs.length}枚）</span><span class="n">${b.total}円</span></summary>${cs.map(c=>`<div class="row"><span>${esc(c.text)}${c.comment?`<small class="cmt">コメント：${esc(c.comment)}</small>`:''}</span><b>${c.amount}円</b></div>`).join('')}</details>`}).join('')
+      return `<details class="batch"><summary><span>${fmt(b.at)} に使った（${cs.length}枚）</span><span class="n">${b.total}円</span></summary>${cs.map(c=>`<div class="row"><span>${esc(c.text)}</span><b>${c.amount}円</b></div>`).join('')}</details>`}).join('')
       :`<div class="empty">まだ権利を使ってへんで。</div>`;
-  }else{
+  }else if(tab==='failed'){
     body=failed.length?failed.map(c=>itemHTML(c,false).replace('data-act="pick"','')).join(''):`<div class="empty">ダメやった挑戦はまだないで。</div>`;
+  }else{
+    const lab={done:'締めた',fail:'3回見た',auto:'自動で締め',lapsed:'未締め'};
+    const ds=[S.day,...S.days.slice().reverse()].filter(d=>d&&d.rounds.length);
+    body=ds.length?ds.map(d=>`<details class="batch"><summary><span>${d.date}</span><span class="n">${d.rounds.length}R</span></summary>${d.rounds.map(x=>{
+      const bs=x.ev.filter(e=>e.k==='b').map(e=>e.m+'分').join('・');
+      return `<div class="row"><span>R${x.no}　手が伸びた${x.held+x.slipped}回（○${x.held} ✕${x.slipped}）${bs?`<br><small>戻るまで: ${bs}</small>`:''}${x.reason?`<br><small>${esc(x.reason)}</small>`:''}</span><b>${x.endedAt?(lab[x.result]||'')+(x.paid!=null?' '+x.paid+'円':''):'進行中'}</b></div>`}).join('')}</details>`).join('')
+      :`<div class="empty">まだラウンド記録はないで。</div>`;
   }
   const total=list.filter(c=>ids.has(c.id)).reduce((s,c)=>s+c.amount,0);
   app.innerHTML=`<div class="page"><div class="meta" style="margin:0">使える残高</div><div class="bal"><span class="n">${balance()}</span><span class="y">円</span></div>
-  <div class="tabs"><button class="${tab==='avail'?'on':''}" data-act="tab" data-v="avail">使える(${list.length})</button><button class="${tab==='used'?'on':''}" data-act="tab" data-v="used">使った(${S.batches.length})</button><button class="${tab==='failed'?'on':''}" data-act="tab" data-v="failed">ダメやった(${failed.length})</button></div>
+  <div class="tabs"><button class="${tab==='avail'?'on':''}" data-act="tab" data-v="avail">使える(${list.length})</button><button class="${tab==='used'?'on':''}" data-act="tab" data-v="used">使った(${S.batches.length})</button><button class="${tab==='failed'?'on':''}" data-act="tab" data-v="failed">ダメやった(${failed.length})</button><button class="${tab==='rounds'?'on':''}" data-act="tab" data-v="rounds">ラウンド</button></div>
   ${body}
   <div class="tools"><p>データはこの端末のブラウザに保存してる。たまにバックアップ書き出しとくと安心やで。</p>
   <button class="btn sm ghost" data-act="export">バックアップ書き出し</button><button class="btn sm ghost" data-act="import">読み込み</button><input type="file" id="file" accept="application/json" hidden></div></div>
@@ -329,24 +384,25 @@ function rBank(app){
 document.addEventListener('click',e=>{
   const el=e.target.closest('[data-act]');if(!el)return;
   const a=el.dataset.act;
-  if(a==='go-note'){screen='note';render()}
-  else if(a==='go-bank'){screen='bank';render()}
-  else if(a==='todos'){screen='todos';render()}
-  else if(a==='back-note'){if(!isFlipped())rot+=180;screen='note';render()}
-  else if(a==='todo-pick'){const t=S.todos.find(x=>x.id===el.dataset.id);if(t){S.draft=t.text;S.draftTodo=t.id;save();drawZone();drawTodos()}}
-  else if(a==='todo-add'){
-    const v=($('#bulk').value||'').split(/\r?\n/).map(x=>x.replace(/^[\s・\-*•]+/,'').trim()).filter(Boolean);
-    if(!v.length){toast('1行に1件ずつ書いてな');return}
-    v.forEach(t=>S.todos.push({id:uid(),text:t,addedAt:Date.now()}));save();render();toast(`${v.length}件追加したで！`);
+  if(a==='rstart'){const D=day();if(D.over||cur()||D.rounds.length>=3)return;D.rounds.push({no:D.rounds.length+1,startedAt:Date.now(),endedAt:null,held:0,slipped:0,ev:[]});save();refresh();toast(`ラウンド${D.rounds.length}、開始！`)}
+  else if(a==='reach')reach();
+  else if(a==='rclose'){const x=cur();if(!x)return;if(screen!=='redit')rPrev=screen;pickAmt=MULT[x.no-1];screen='redit';render();upPrev()}
+  else if(a==='rback'){screen=rPrev;render()}
+  else if(a==='rdeposit'){
+    const x=cur();if(!x){screen=rPrev;render();return}
+    const reason=$('#etxt').value.trim(),t=Date.now();
+    x.endedAt=t;x.result='done';x.paid=pickAmt;x.reason=reason;day().over=true;
+    S.coins.push({id:uid(),text:reason||`ラウンド${x.no}を締めた`,origText:'',amount:pickAmt,status:'saved',kind:'round',meta:`ラウンド${x.no}　手が伸びた${x.held+x.slipped}回（○${x.held} ✕${x.slipped}）`,startedAt:t,endedAt:t,batchId:null});
+    save();screen=rPrev;render();toast(`${pickAmt}円、貯金箱に入ったで！`);
   }
-  else if(a==='todo-del'){S.todos=S.todos.filter(x=>x.id!==el.dataset.id);if(S.draftTodo===el.dataset.id)S.draftTodo=null;save();render()}
-  else if(a==='todo-clear'){if(confirm('リストを全部消す？')){S.todos=[];S.draftTodo=null;save();render()}}
+  else if(a==='go-note'){screen='note';render()}
+  else if(a==='go-bank'){screen='bank';render()}
   else if(a==='edit'){editing=true;drawZone()}
-  else if(a==='start'){if(!S.draft.trim())return;S.run={text:S.draft.trim(),amount:100,startedAt:Date.now(),endedAt:null,todoId:S.draftTodo||null};save();screen='run';render()}
+  else if(a==='start'){if(!S.draft.trim())return;S.run={text:S.draft.trim(),amount:100,startedAt:Date.now(),endedAt:null};save();screen='run';render()}
   else if(a==='stop'){S.run.endedAt=Date.now();save();screen='judge';render()}
   else if(a==='to-edit'){pickAmt=S.run.amount||100;screen='edit';render();upPrev()}
   else if(a==='back-judge'){screen='judge';render()}
-  else if(a==='amt'){pickAmt=+el.dataset.v;document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',+c.dataset.v===pickAmt));const cm=$('#ecmt');if(cm)cm.placeholder=cmtPH();upPrev()}
+  else if(a==='amt'){pickAmt=+el.dataset.v;document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',+c.dataset.v===pickAmt));upPrev()}
   else if(a==='deposit')deposit();
   else if(a==='tear')tear();
   else if(a==='tab'){tab=el.dataset.v;sel={a:null,b:null};render()}
@@ -358,7 +414,7 @@ document.addEventListener('click',e=>{
   else if(a==='import')$('#file').click();
 });
 document.addEventListener('input',e=>{if(e.target.id==='etxt')upPrev()});
-function upPrev(){const p=$('#prev');if(!p||screen!=='edit')return;const t=$('#etxt');p.innerHTML=paper(t?t.value:S.run.text,pickAmt)}
+function upPrev(){const p=$('#prev');if(!p||(screen!=='edit'&&screen!=='redit'))return;const t=$('#etxt');const x=cur();p.innerHTML=paper(screen==='edit'?(t?t.value:S.run.text):((t&&t.value.trim())||`ラウンド${x?x.no:''}`),pickAmt)}
 
 function pick(id){
   if(!sel.a||sel.b){sel={a:id,b:null}}else{sel.b=id}
@@ -366,17 +422,16 @@ function pick(id){
 }
 function deposit(){
   const text=$('#etxt').value.trim();if(!text){toast('やったことを書いてな');return}
-  const r=S.run;const comment=($('#ecmt').value||'').trim();
-  S.coins.push({id:uid(),text,origText:r.text,amount:pickAmt,comment,status:'saved',registeredAt:Date.now(),batchId:null});
-  if(r.todoId)S.todos=S.todos.filter(t=>t.id!==r.todoId);
-  S.run=null;S.draft='';S.draftTodo=null;save();
+  const r=S.run;
+  S.coins.push({id:uid(),text,origText:r.text,amount:pickAmt,status:'saved',startedAt:r.startedAt,endedAt:r.endedAt,batchId:null});
+  S.run=null;S.draft='';save();
   const p=$('#prev');if(p)p.firstElementChild.classList.add('drop');
   setTimeout(()=>{tab='avail';sel={a:null,b:null};screen='bank';render();toast(`${pickAmt}円、貯金箱に入ったで！`)},650);
 }
 function tear(){
   const r=S.run;
-  S.coins.push({id:uid(),text:r.text,origText:r.text,amount:r.amount||100,status:'failed',registeredAt:Date.now(),batchId:null});
-  S.run=null;S.draft='';S.draftTodo=null;save();
+  S.coins.push({id:uid(),text:r.text,origText:r.text,amount:r.amount||100,status:'failed',startedAt:r.startedAt,endedAt:r.endedAt,batchId:null});
+  S.run=null;S.draft='';save();
   const html=paper(r.text,r.amount||100);
   $('#prev').innerHTML=`<div class="tear"><div class="half l">${html}</div><div class="half r">${html}</div></div>`;
   setTimeout(()=>{tab='failed';sel={a:null,b:null};screen='bank';render();toast('ちぎった。次はいけるで')},900);
@@ -385,7 +440,7 @@ function spendModal(){
   const ids=rangeIds();const cs=S.coins.filter(c=>ids.includes(c.id));const total=cs.reduce((s,c)=>s+c.amount,0);
   const m=document.createElement('div');m.className='modal';
   m.innerHTML=`<div class="sheet"><h3>この小銭の権利、ほんまに使う？</h3><div class="tot">${total}円</div>
-  <div style="color:var(--sub);font-size:14px">${cs.length}枚分（${fmt(Math.min(...cs.map(regAt)))} 〜 ${fmt(Math.max(...cs.map(regAt)))}）</div>
+  <div style="color:var(--sub);font-size:14px">${cs.length}枚分（${fmt(Math.min(...cs.map(c=>c.endedAt)))} 〜 ${fmt(Math.max(...cs.map(c=>c.endedAt)))}）</div>
   <label><input type="checkbox" id="ok"><span>一回使ったら元に戻せへんことを分かってる</span></label>
   <button class="btn red" id="go" disabled>${total}円分を使う</button><button class="btn ghost" id="no">やめとく</button></div>`;
   document.body.appendChild(m);
