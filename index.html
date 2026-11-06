@@ -70,6 +70,14 @@ textarea{font:inherit;-webkit-user-select:text;user-select:text}
 #day.live .btn.brass{background:#fff;color:#c2300a}
 #day.live .btn.ghost{color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.8) inset}
 #day.rest{background:color-mix(in srgb,var(--sub) 16%,var(--bg))}
+#nav{gap:8px}
+#nav button{font-size:14px;min-width:0}
+.fgcard{background:var(--panel);border-radius:18px;padding:14px 16px;box-shadow:0 0 0 1.5px var(--line) inset;margin-bottom:12px;font-size:15px;line-height:1.6}
+.fgcard small{color:var(--sub)}
+.needle{font-family:var(--num);font-weight:800;font-size:46px;text-align:center;color:var(--brass);margin:6px 0 10px}
+.chips11{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+@keyframes fl{0%{opacity:.6}100%{opacity:0}}
+body.flash::before{content:"";position:fixed;inset:0;background:#ff8a00;opacity:0;animation:fl 1.3s ease-out;z-index:25;pointer-events:none}
 body.live::after{content:"";position:fixed;inset:0;border-radius:46px;box-shadow:inset 0 0 0 4px #ff5a1f;pointer-events:none;z-index:17}
 #day .dl{flex:1;font-weight:800;font-size:13px;color:var(--sub)}
 #day .dl b{font-family:var(--num);font-size:19px;color:var(--brass)}
@@ -171,9 +179,10 @@ body.live::after{content:"";position:fixed;inset:0;border-radius:46px;box-shadow
 <script>
 /* ===== データ ===== */
 const KEY='coinNote.v1';
-const blank=()=>({coins:[],batches:[],run:null,draft:'',day:null,days:[],pomo:{on:false,phase:'work',start:0,n:0}});
+const blank=()=>({coins:[],batches:[],run:null,draft:'',day:null,days:[],pomo:{on:false,phase:'work',start:0,n:0},fogs:[]});
 let S=load();
 if(!Array.isArray(S.days))S.days=[];
+if(!Array.isArray(S.fogs))S.fogs=[];
 if(!S.pomo)S.pomo={on:false,phase:'work',start:0,n:0};
 function load(){try{const j=JSON.parse(localStorage.getItem(KEY));if(j&&Array.isArray(j.coins))return Object.assign(blank(),j)}catch(e){}return blank()}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('保存に失敗したで。バックアップ取っといて！')}}
@@ -204,7 +213,7 @@ function day(){
       const amt=settle(l);setTimeout(()=>toast(`昨日のラウンドは自動で締めたで（${amt}円）`),400);
     }
     S.days.push(S.day)}
-    S.day={date:k,rounds:[],over:false};save();
+    S.day={date:k,rounds:[],over:false,meets:[],planned:false};save();
   }
   return S.day;
 }
@@ -284,15 +293,104 @@ function render(){
   clearInterval(tick);
   const app=$('#app');
   const nav=$('#nav');
-  const showNav=screen==='note'||screen==='bank';
+  const showNav=screen==='note'||screen==='bank'||screen==='fog';
   nav.classList.toggle('hide',!showNav);
   if(showNav){
-    nav.innerHTML=`<button data-act="go-note" class="${screen==='note'?'on':''}">付箋</button><button data-act="go-bank" class="${screen==='bank'?'on':''}">貯金箱<b>${balance()}円</b></button>`;
+    nav.innerHTML=`<button data-act="go-note" class="${screen==='note'?'on':''}">付箋</button><button data-act="go-fog" class="${screen==='fog'?'on':''}">霧${day().fogPlan?'':' <span style="color:#ff5a1f">●</span>'}</button><button data-act="go-bank" class="${screen==='bank'?'on':''}">貯金箱<b>${balance()}円</b></button>`;
   }
   rDay();
-  ({note:rNote,run:rRun,judge:rJudge,edit:rEdit,bank:rBank,redit:rREdit})[screen](app);
-  wlSync();
+  ({note:rNote,run:rRun,judge:rJudge,edit:rEdit,bank:rBank,redit:rREdit,fog:rFog})[screen](app);
+  wlSync();dueAsk();
 }
+
+/* ---- 霧を晴らす ---- */
+const newFg=()=>({step:0,task:'',meet:false,urgent:false,fear0:null,scary:'',unknown:'',first:'',fear1:null,cleared:''});
+let fg=newFg(),planOpen=false,dueOpen=false;
+function fgRead(){['task','scary','unknown','first','cleared'].forEach(k=>{const e=$('#fg_'+k);if(e)fg[k]=e.value})}
+const fearChips=(key,c)=>`<div class="chips11">${[0,1,2,3,4,5,6,7,8,9,10].map(n=>`<button class="chip ${n===c?'on':''}" data-act="${key}" data-v="${n}">${n}</button>`).join('')}</div>`;
+const fta=(k,ph,h)=>`<textarea class="field" id="fg_${k}" placeholder="${ph}" style="min-height:${h||96}px">${esc(fg[k])}</textarea>`;
+function rFog(app){
+  const D=day(),st=fg.step,P=D.fogPlan;let h='';
+  if(st===0){
+    const ok=!fg.meet&&!fg.urgent;
+    const yn=(k,label)=>`<div style="margin-top:10px">${label}<div style="display:flex;gap:8px;margin-top:6px"><button class="btn sm ${fg[k]?'ghost':'brass'}" data-act="fgq" data-k="${k}" data-v="no" style="flex:1">ない</button><button class="btn sm ${fg[k]?'brass':'ghost'}" data-act="fgq" data-k="${k}" data-v="yes" style="flex:1">ある</button></div></div>`;
+    const msg=ok?'条件は揃っとる。ちょっとやってみる？':fg.urgent?'先にそっちを片付けたほうがええかも。それでも1問だけいく？':'会議が近いなら、会議のあとに回そか。1問だけならいけるで';
+    const rec=[...new Set(S.fogs.slice().reverse().map(x=>x.task))].slice(0,3);fg._rec=rec;
+    const both=S.fogs.filter(x=>x.fear0!=null&&x.fear1!=null),fu=S.fogs.filter(x=>x.followup),fy=fu.filter(x=>x.followup==='yes').length;
+    const avg=a=>(a.reduce((q,x)=>q+x,0)/a.length).toFixed(1);
+    const cards=S.fogs.slice().reverse().slice(0,5).map(x=>`<div class="fgcard"><b>${esc(x.task)}</b> <small>${x.date.slice(5)}</small><br>${x.fear0!=null&&x.fear1!=null?`怖さ ${x.fear0} → ${x.fear1}<br>`:''}${x.first?`最初の一手：${esc(x.first)}<br>`:''}${x.cleared.map(c=>`・${esc(c)}`).join('<br>')}${x.followup?`<br><small>次の日、${x.followup==='yes'?'進んだ':'まだ'}</small>`:''}</div>`).join('');
+    const ci=P&&!P.done?`<div class="fgcard"><b>今日の霧は ${P.time}</b>${P.task?`<br>${esc(P.task)}`:''}${P.postponed&&P.postponed.length?`<br><small>延期 ${P.postponed.length}回</small>`:''}<br><button class="btn sm ghost" data-act="checkin" style="margin-top:8px">時刻を直す</button></div>`:`<button class="btn sm brass" data-act="checkin" style="margin-bottom:12px">チェックインをはじめる</button>`;
+    h=`<h2>霧を晴らす</h2>${ci}
+    <div class="fgcard"><b>いまの状況</b>${yn('meet','30分以内に会議が始まる？')}${yn('urgent','数時間以内に終えて連絡する件、ある？')}
+      <div style="margin-top:12px;font-weight:800">${msg}</div></div>
+    <div class="lab">どのタスクに思いを馳せる？</div>${fta('task','例：お客様へSLA合意の会議案内を出す',64)}
+    <div>${rec.map((t,i)=>`<button class="btn sm ghost" data-act="fgpick" data-v="${i}" style="margin:6px 6px 0 0">${esc(t)}</button>`).join('')}</div>
+    <button class="btn brass" data-act="fgnext" style="margin:14px 0 18px;width:100%">やってみる</button>
+    ${both.length?`<div class="fgcard"><b>霧のあとの変化</b><br>予想の怖さ 平均 ${avg(both.map(x=>x.fear0))} → 晴れたあと ${avg(both.map(x=>x.fear1))}${fu.length?`<br>霧のあと、次の日に進んだ：${fy}/${fu.length}`:''}</div>`:''}
+    ${cards?`<div class="lab">晴れて出てきたもの</div>${cards}`:''}
+    ${(()=>{const q=S.fogs.find(x=>x.followup===null&&x.date<dkey());return q?`<div class="fgcard"><small>${q.date.slice(5)}の霧</small><br><b>${esc(q.task)}</b><br>あのあと、進んだ？<div style="display:flex;gap:8px;margin-top:8px"><button class="btn sm brass" data-act="fu" data-v="yes" data-id="${q.id}" style="flex:1">進んだ</button><button class="btn sm ghost" data-act="fu" data-v="no" data-id="${q.id}" style="flex:1">まだ</button></div></div>`:''})()}`;
+  }else if(st===1){
+    h=`<h2>霧を晴らす 1/3</h2><div class="meta">${esc(fg.task)}</div><div class="lab">これを始めたら、何が起きそう？（怖いこと1つ）</div>${fta('scary','なんでもええ。1〜2行で')}<div class="lab" style="margin-top:14px">怖さ、いまどれくらい？（0〜10）</div>${fearChips('fear0',fg.fear0)}`;
+  }else if(st===2){
+    h=`<h2>霧を晴らす 2/3</h2><div class="meta">${esc(fg.task)}</div><div class="lab">何が未確定？ それが決まらんと、ほんまに着手できへん？ 仮置きで進められへん？</div>${fta('unknown','書きながら考えてええで',130)}`;
+  }else if(st===3){
+    h=`<h2>霧を晴らす 3/3</h2><div class="meta">${esc(fg.task)}</div><div class="lab">いちばん小さい最初の一手は？</div>${fta('first','例：候補日を3つ書いて案内を送る',80)}`;
+  }else{
+    h=`<h2>おつかれさん</h2>${fg.first?`<div class="fgcard"><small>最初の一手</small><br><b>${esc(fg.first)}</b></div>`:''}<div class="lab">いまの怖さは？（0〜10）</div>${fearChips('fear1',fg.fear1)}${fg.fear0!=null&&fg.fear1!=null?`<div class="needle">${fg.fear0} → ${fg.fear1}</div>`:''}<div class="lab" style="margin-top:14px">晴れて分かったこと・決まったこと・仮置きにしたこと（1行ずつ）</div>${fta('cleared','例：仮置きで進めてええ',110)}
+    <div class="stack" style="margin-top:18px"><button class="btn brass" data-act="fgdone">完了して100円</button><button class="btn ghost" data-act="fgquit">やめる</button></div>`;
+  }
+  if(st>=1&&st<=3)h+=`<div class="stack" style="margin-top:18px"><button class="btn brass" data-act="fgnext">次へ</button><button class="btn ghost" data-act="fgfinish">ここで終える</button></div>`;
+  app.innerHTML=`<div class="page">${h}</div>`;
+}
+function fgDone(){
+  fgRead();
+  if(!fg.scary.trim()&&!fg.unknown.trim()&&!fg.first.trim()){toast('1つは書いてな');return}
+  const t=Date.now(),cl=fg.cleared.split('\n').map(x=>x.trim()).filter(Boolean);
+  S.fogs.push({id:uid(),date:dkey(),at:t,task:fg.task.trim(),fear0:fg.fear0,fear1:fg.fear1,scary:fg.scary,unknown:fg.unknown,first:fg.first,cleared:cl,followup:null});
+  const meta=fg.fear0!=null&&fg.fear1!=null?`怖さ ${fg.fear0} → ${fg.fear1}`:'';
+  S.coins.push({id:uid(),text:'霧を晴らした：'+fg.task.trim(),origText:'',amount:100,status:'saved',kind:'fog',meta,startedAt:t,endedAt:t,batchId:null});
+  const PP=day().fogPlan;if(PP)PP.done=true;
+  save();fg=newFg();render();toast(`100円、貯金箱に入ったで！${meta?'　'+meta:''}`);
+}
+function checkin(){
+  const D=day();if(planOpen)return;planOpen=true;const P=D.fogPlan||{};
+  const rec=[...new Set(S.fogs.slice().reverse().map(x=>x.task))].slice(0,3);
+  sheet(`<h3>チェックイン</h3><div class="lab" style="margin:0">今日、霧に向き合う時刻は？</div><input type="time" id="ct" class="field" style="min-height:0;padding:10px;font-size:20px" value="${P.time||''}"><div class="lab" style="margin:0">どのタスク？（あとで変えてもええ）</div><textarea id="cn" class="field" style="min-height:64px">${esc(P.task||'')}</textarea><div>${rec.map((t,i)=>`<button class="btn sm ghost" data-r="${i}" style="margin:4px 6px 0 0">${esc(t)}</button>`).join('')}</div><button class="btn brass" id="cd">この時刻で決める</button><button class="btn ghost" id="cx">やめとく</button>`,m=>{
+    m.onclick=e=>{const b=e.target.closest('[data-r]');if(b)m.querySelector('#cn').value=rec[+b.dataset.r]};
+    m.querySelector('#cd').onclick=()=>{const t=m.querySelector('#ct').value;if(!t){toast('時刻を入れてな');return}D.fogPlan={time:t,task:m.querySelector('#cn').value.trim(),postponed:P.postponed||[],started:false,done:false};save();m.remove();planOpen=false;render();dueAsk()};
+    m.querySelector('#cx').onclick=()=>{m.remove();planOpen=false};
+  });
+}
+function dueAsk(){
+  const D=day(),P=D.fogPlan;if(!P||P.done||P.started||dueOpen||planOpen)return;
+  const [hh,mm]=P.time.split(':').map(Number),n=new Date();if(n.getHours()*60+n.getMinutes()<hh*60+mm)return;
+  dueOpen=true;const c={meet:false,urgent:false};
+  sheet('',m=>{
+    const v=m.querySelector('.sheet');
+    const tg=k=>`<span style="display:inline-flex;gap:6px;margin-left:6px"><button class="btn sm ${c[k]?'ghost':'brass'}" data-c="${k}" data-v="0">ない</button><button class="btn sm ${c[k]?'brass':'ghost'}" data-c="${k}" data-v="1">ある</button></span>`;
+    const close=()=>{m.remove();dueOpen=false};
+    const begin=()=>{P.started=true;save();close();fg=newFg();fg.task=P.task||'';fg.meet=c.meet;fg.urgent=c.urgent;fg.step=P.task?1:0;screen='fog';render()};
+    const draw=()=>{const ok=!c.meet&&!c.urgent;
+      v.innerHTML=`<h3>🌫 霧の時間やで（${P.time}）</h3>${P.task?`<div><b>${esc(P.task)}</b></div>`:''}<div>30分以内に会議が始まる？${tg('meet')}</div><div>数時間以内に終えて連絡する件、ある？${tg('urgent')}</div><div style="font-weight:800">${ok?'条件は揃っとる。いまが一番ええタイミングやで。':'条件が揃ってへんなら、1問だけにしよか。'}</div><button class="btn brass" id="go" style="padding:18px;font-size:19px">${ok?'予定通りはじめる':'1問だけはじめる'}</button><button class="btn ghost" id="pp" style="padding:10px;font-size:13px">状況が変わった</button>`};
+    const timeView=reason=>{
+      const d=new Date(Date.now()+30*60000),def=`${p2(d.getHours())}:${p2(d.getMinutes())}`;
+      v.innerHTML=`<h3>いつなら、はじめられる？</h3><div class="meta" style="margin:0">今日${(P.postponed||[]).length+1}回目の延期（${esc(reason)}）</div><input type="time" id="nt" class="field" style="min-height:0;padding:10px;font-size:20px" value="${def}"><button class="btn brass" id="nok">この時刻にする</button><button class="btn ghost" id="nb">やっぱり、はじめる</button>`;
+      v.querySelector('#nok').onclick=()=>{const t=v.querySelector('#nt').value,[a,b]=(t||'').split(':').map(Number),now=new Date();if(!t||a*60+b<=now.getHours()*60+now.getMinutes()){toast('いまより後の時刻にしてな');return}P.postponed=P.postponed||[];P.postponed.push({at:Date.now(),reason,from:P.time,to:t});P.time=t;save();close();toast(`${t}に、またここで声かけるで（アプリを開いとる時）`);render()};
+      v.querySelector('#nb').onclick=begin;
+    };
+    const reasons=['会議が入った','急ぎの連絡が入った','手が離せん急ぎの作業','なんとなく気が乗らん'];
+    m.onclick=e=>{const b=e.target.closest('button');if(!b)return;
+      if(b.dataset.c){c[b.dataset.c]=b.dataset.v==='1';draw();return}
+      if(b.id==='go'||b.id==='go1'||b.id==='back')begin();
+      else if(b.id==='pp')v.innerHTML=`<h3>何が変わった？</h3>${reasons.map((r,i)=>`<button class="btn ghost" data-rs="${i}">${r}</button>`).join('')}<button class="btn brass" id="back">やっぱり、はじめる</button>`;
+      else if(b.dataset.rs!=null){const i=+b.dataset.rs;if(i===3)v.innerHTML=`<h3>気が乗らんのは、いちばん普通のことやで</h3><div>1問だけ答えて、しんどければそこで終わってええ。やってみる？</div><button class="btn brass" id="go1">1問だけやってみる</button><button class="btn ghost" data-rs="9" style="font-size:13px">それでも延期する</button>`;else timeView(reasons[i])}
+      else if(b.dataset.rs==='9')timeView(reasons[3]);
+    };
+    draw();
+  });
+}
+setInterval(dueAsk,15000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)dueAsk()});
 
 /* ---- 付箋 ---- */
 function rNote(app){
@@ -351,6 +449,7 @@ function unlockAudio(){try{actx=actx||new (window.AudioContext||window.webkitAud
 function beep(){try{unlockAudio();[0,.28].forEach(d=>{const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=880;g.gain.value=.15;o.connect(g);g.connect(actx.destination);o.start(actx.currentTime+d);o.stop(actx.currentTime+d+.16)})}catch(e){}}
 const pmLeft=()=>{const p=S.pomo,len=(p.phase==='work'?POMO.work:POMO.brk)*60;return Math.max(0,len-Math.floor((Date.now()-p.start)/1000))};
 const pmText=()=>S.pomo.on?`${S.pomo.phase==='work'?'🍅':'☕'} ${mmss(pmLeft())}`:`🍅 ${POMO.work}分`;
+function flash(){document.body.classList.remove('flash');void document.body.offsetWidth;document.body.classList.add('flash');setTimeout(()=>document.body.classList.remove('flash'),1400)}
 function pmAdvance(){
   const p=S.pomo;if(!p.on)return;let ch=false,g=0;
   while(g++<50){
@@ -359,7 +458,7 @@ function pmAdvance(){
     p.start+=len;ch=true;
     if(p.phase==='work'){p.phase='break';p.n++}else p.phase='work';
   }
-  if(ch){save();beep();try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}
+  if(ch){save();flash();
     toast(p.phase==='break'?`🍅${p.n}つ終了！${POMO.brk}分休もう`:`休憩おわり。次の${POMO.work}分いこか`)}
 }
 function pmTick(){
@@ -369,7 +468,7 @@ function pmTick(){
 setInterval(pmTick,1000);
 function pmClick(){
   const p=S.pomo;
-  if(!p.on){Object.assign(p,{on:true,phase:'work',start:Date.now(),n:0});unlockAudio();save();rDay();toast(`🍅 ${POMO.work}分、いこか`);return}
+  if(!p.on){Object.assign(p,{on:true,phase:'work',start:Date.now(),n:0});save();rDay();toast(`🍅 ${POMO.work}分、いこか`);return}
   sheet(`<h3>ポモドーロを止める？</h3><div>ここまで🍅${p.n}つ完了。</div><button class="btn red" id="y">止める</button><button class="btn ghost" id="n">続ける</button>`,m=>{
     m.querySelector('#n').onclick=()=>m.remove();
     m.querySelector('#y').onclick=()=>{m.remove();p.on=false;save();rDay()};
@@ -453,7 +552,17 @@ function rBank(app){
 document.addEventListener('click',e=>{
   const el=e.target.closest('[data-act]');if(!el)return;
   const a=el.dataset.act;
-  if(a==='rstart'){const D=day();if(D.over||cur()||D.rounds.length>=3)return;D.rounds.push({no:D.rounds.length+1,startedAt:Date.now(),endedAt:null,held:0,slipped:0,ev:[],paused:false,pauses:[]});save();refresh();toast(`ラウンド${D.rounds.length}、開始！`)}
+  if(a==='go-fog'){screen='fog';render()}
+  else if(a==='checkin')checkin();
+  else if(a==='fgq'){fgRead();fg[el.dataset.k]=el.dataset.v==='yes';render()}
+  else if(a==='fgpick'){fgRead();fg.task=(fg._rec||[])[+el.dataset.v]||fg.task;render()}
+  else if(a==='fear0'||a==='fear1'){fgRead();fg[a]=+el.dataset.v;render()}
+  else if(a==='fgnext'){fgRead();if(fg.step===0&&!fg.task.trim()){toast('どのタスクか、書いてな');return}fg.step=Math.min(4,fg.step+1);render()}
+  else if(a==='fgfinish'){fgRead();fg.step=4;render()}
+  else if(a==='fgquit'){fg=newFg();render()}
+  else if(a==='fgdone')fgDone();
+  else if(a==='fu'){const q=S.fogs.find(x=>x.id===el.dataset.id);if(q){q.followup=el.dataset.v;save();render()}}
+  else if(a==='rstart'){const D=day();if(D.over||cur()||D.rounds.length>=3)return;D.rounds.push({no:D.rounds.length+1,startedAt:Date.now(),endedAt:null,held:0,slipped:0,ev:[],paused:false,pauses:[]});save();refresh();toast(`ラウンド${D.rounds.length}、開始！`)}
   else if(a==='pomo')pmClick();
   else if(a==='rpause'){const x=cur();if(!x||x.paused)return;x.pauses=x.pauses||[];x.paused=true;x.pauses.push({s:Date.now(),e:null});save();refresh();toast('中断中。戻ったら「再開する」を押してな')}
   else if(a==='rresume'){const x=cur();if(!x||!x.paused)return;const q=(x.pauses||[])[x.pauses.length-1];if(q&&!q.e)q.e=Date.now();x.paused=false;save();refresh();toast('再開！ここから逃げへん時間や')}
